@@ -22,8 +22,14 @@
 	<bean id="viewResolver" p:prefix="/WEB-INF/views/" p:suffix=".jsp"
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver" />
 
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<bean
+				class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" />
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
 	<!-- Cấu hình package chứa các controller -->
-	<context:component-scan
-		base-package="webshop.controller, webshop.dao" />
+	<context:component-scan base-package="webshop.*" />
 
 </beans>

@@ -129,40 +129,39 @@ public class UserController {
 		List<Map<String, Object>> cartDetails = new ArrayList<>();
 
 		for (Cart cart : dsCart) {
-			// Kiểm tra điều kiện customersID
-			if (cart.getCustomer().getId() == givenCustomerId) {
-				// Tìm ProductDetail tương ứng với product_detailsID trong Cart
-				ProductDetail productDetail = dsDetail.stream()
-						.filter(detail -> detail.getId() == cart.getProductDetail().getId()) // so sánh ID
-						.findFirst().orElse(null);
-				
-
-				if (productDetail != null) {
-					// Tìm Product tương ứng với productID trong ProductDetail
-					Product product = dsProduct.stream().filter(p -> p.getId() == productDetail.getProduct().getId()) // so
-																														// sánh
-																														// ID
+			if (cart.getStatus() != 1) {
+				// Kiểm tra điều kiện customersID
+				if (cart.getCustomer().getId() == givenCustomerId) {
+					// Tìm ProductDetail tương ứng với product_detailsID trong Cart
+					ProductDetail productDetail = dsDetail.stream()
+							.filter(detail -> detail.getId() == cart.getProductDetail().getId()) // so sánh ID
 							.findFirst().orElse(null);
 
-					if (product != null) {
-						// Tính tổng tiền
-						int quantity = cart.getQuantity();
-						int price = productDetail.getPrice();
-						int total = price * quantity;
+					if (productDetail != null) {
+						// Tìm Product tương ứng với productID trong ProductDetail
+						Product product = dsProduct.stream()
+								.filter(p -> p.getId() == productDetail.getProduct().getId()).findFirst().orElse(null);
 
-						// Lưu thông tin vào danh sách
-						Map<String, Object> detail = new HashMap<>();
-						detail.put("cartid", cart.getID());
-						detail.put("status", cart.getStatus());
-						detail.put("image", product.getImage());
-						detail.put("name", product.getName());
-						detail.put("size", productDetail.getSize().getId());
-						detail.put("price", price);
-						detail.put("quantity", quantity);
-						detail.put("maxQuantity", productDetail.getQuantity());
-						detail.put("total", total);
+						if (product != null) {
+							// Tính tổng tiền
+							int quantity = cart.getQuantity();
+							int price = productDetail.getPrice();
+							int total = price * quantity;
 
-						cartDetails.add(detail);
+							// Lưu thông tin vào danh sách
+							Map<String, Object> detail = new HashMap<>();
+							detail.put("cartid", cart.getID());
+							detail.put("status", cart.getStatus());
+							detail.put("image", product.getImage());
+							detail.put("name", product.getName());
+							detail.put("size", productDetail.getSize().getId());
+							detail.put("price", price);
+							detail.put("quantity", quantity);
+							detail.put("maxQuantity", productDetail.getQuantity());
+							detail.put("total", total);
+
+							cartDetails.add(detail);
+						}
 					}
 				}
 			}

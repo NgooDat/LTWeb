@@ -81,7 +81,8 @@
 										class="products-cart u-border-1 u-border-grey-15 u-table-cell u-block-90d4-41">
 										<span
 										class="u-cart-remove-item u-icon u-icon-rectangle u-block-90d4-42">
-											<input id="checkbox${detail.cartid}" type="checkbox" class="u-checkbox">
+											<input id="checkbox${detail.cartid}" type="checkbox"
+											class="u-checkbox">
 									</span> <img
 										class="u-cart-product-image u-image u-image-round u-preserve-proportions u-product-control u-radius-17 u-block-90d4-43"
 										src="images/products/${detail.image}" data-image-width="859"
@@ -161,7 +162,7 @@
 									<td id="delete${detail.cartid}"
 										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-50">
 										<a class="center delete"
-										onclick="deleteCart(${detail.cartid}), deleteElementById(${detail.cartid})">
+										onclick="deleteCart(${detail.cartid})">
 											<span
 											class="center u-cart-remove-item u-icon u-icon-rectangle u-block-90d4-42">
 												<svg xmlns="http://www.w3.org/2000/svg"
@@ -237,13 +238,15 @@
 													class="u-align-left u-border-1 u-border-grey-15 u-first-column u-table-cell u-block-90d4-81">
 													Tổng cộng</td>
 												<td id="totalPrice"
-													class="u-border-1 u-border-grey-15 u-table-cell u-block-90d4-82">$281.00</td>
+													class="u-border-1 u-border-grey-15 u-table-cell u-block-90d4-82">0
+													VNĐ</td>
 											</tr>
 									</table>
 								</div>
-								<a href="#" style="margin-top: 20px;"
-									class="u-btn u-btn-round u-button-style u-cart-checkout-btn u-radius-50 u-block-90d4-89">Xác
-									nhận</a>
+								<a id="confirmBtn" style="margin-top: 20px;"
+									class="u-btn u-btn-round u-button-style u-cart-checkout-btn u-radius-50 u-block-90d4-89">
+									Xác nhận </a>
+
 							</div>
 						</div>
 					</div>
