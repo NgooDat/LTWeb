@@ -35,7 +35,11 @@
 			<h2
 				class=" gioHang u-align-center-lg u-align-center-md u-align-center-sm u-align-center-xs u-custom-font u-font-ubuntu u-text u-text-default u-text-1">
 				Giỏ hàng</h2>
+			<c:if test="${empty cartDetails}">
+			    <h1 style="text-align: center;">Giỏ hàng trống!!!</h1>
+			</c:if>
 
+			<c:if test="${not empty cartDetails}">
 			<div class="u-cart u-expanded-width u-layout-grid u-block-90d4-6">
 				<div
 					class="u-cart-products-table u-table u-table-responsive u-block-90d4-7">
@@ -71,12 +75,9 @@
 						<tbody
 							class="u-align-left u-table-alt-grey-5 u-table-body u-block-90d4-18">
 
-
-
-
 							<!--Sản phẩm nè-->
 							<c:forEach var="detail" items="${cartDetails}">
-								<tr id="${detail.cartid}" style="height: 100px;">
+								<tr id="${detail.cartid}" style="height: 100px;" class="cartProduct">
 									<td id="image${detail.cartid}"
 										class="products-cart u-border-1 u-border-grey-15 u-table-cell u-block-90d4-41">
 										<span
@@ -89,7 +90,7 @@
 										data-image-height="1908">
 										<h2
 											class="u-cart-product-title u-product-control u-text u-block-90d4-44">
-											<a class="u-product-title-link" href="#">${detail.name}</a>
+											<a class="u-product-title-link" href="productinfo.htm?proid=${detail.productId}">${detail.name}</a>
 										</h2>
 									</td>
 									<td id="size${detail.cartid}"
@@ -188,11 +189,7 @@
 
 								</tr>
 							</c:forEach>
-
-
-
 						</tbody>
-
 					</table>
 				</div>
 				<div class="u-cart-button-container">
@@ -251,6 +248,7 @@
 						</div>
 					</div>
 				</div>
+			</c:if>
 				<style>
 .u-button-style.u-quantity-button {
 	cursor: pointer;

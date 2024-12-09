@@ -83,6 +83,9 @@ public class PaymentController {
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String perform(HttpSession session, ModelMap model) {
 		String email = (String) session.getAttribute("user");
+		if(email == null) {
+			return "redirect:/login.htm";
+		}
 		Account account = accountDAO.getAccountByEmail(email);
 		Customer customer = customerDAO.getCustomerById(account.getId());
 

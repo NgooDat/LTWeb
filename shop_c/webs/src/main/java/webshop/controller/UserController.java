@@ -108,70 +108,7 @@ public class UserController {
 
 		return "user/home";
 	}
-
-	@RequestMapping("cart")
-	public String cart(HttpSession ses, ModelMap model) {
-
-		String email = (String) ses.getAttribute("user");
-
-		Account acc = accd.getAccountByEmail(email);
-
-		Customer cus = cusd.getCustomerById(acc.getId());
-
-		List<Product> dsProduct = product.getAllProducts();
-
-		List<ProductDetail> dsDetail = prdd.getAllProductDetails();
-
-		List<Cart> dsCart = cartd.getAllCarts();
-
-		int givenCustomerId = cus.getId(); // Thay bằng ID của khách hàng mà bạn muốn lọc
-
-		List<Map<String, Object>> cartDetails = new ArrayList<>();
-
-		for (Cart cart : dsCart) {
-			if (cart.getStatus() != 1) {
-				// Kiểm tra điều kiện customersID
-				if (cart.getCustomer().getId() == givenCustomerId) {
-					// Tìm ProductDetail tương ứng với product_detailsID trong Cart
-					ProductDetail productDetail = dsDetail.stream()
-							.filter(detail -> detail.getId() == cart.getProductDetail().getId()) // so sánh ID
-							.findFirst().orElse(null);
-
-					if (productDetail != null) {
-						// Tìm Product tương ứng với productID trong ProductDetail
-						Product product = dsProduct.stream()
-								.filter(p -> p.getId() == productDetail.getProduct().getId()).findFirst().orElse(null);
-
-						if (product != null) {
-							// Tính tổng tiền
-							int quantity = cart.getQuantity();
-							int price = productDetail.getPrice();
-							int total = price * quantity;
-
-							// Lưu thông tin vào danh sách
-							Map<String, Object> detail = new HashMap<>();
-							detail.put("cartid", cart.getID());
-							detail.put("status", cart.getStatus());
-							detail.put("image", product.getImage());
-							detail.put("name", product.getName());
-							detail.put("size", productDetail.getSize().getId());
-							detail.put("price", price);
-							detail.put("quantity", quantity);
-							detail.put("maxQuantity", productDetail.getQuantity());
-							detail.put("total", total);
-
-							cartDetails.add(detail);
-						}
-					}
-				}
-			}
-		}
-
-		// Đưa cartDetails vào model để hiển thị trên giao diện
-		model.addAttribute("cartDetails", cartDetails);
-		return "user/cart";
-	}
-
+	
 	@RequestMapping("order")
 	public String order(HttpSession ses, ModelMap model) {
 

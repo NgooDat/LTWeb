@@ -22,7 +22,6 @@ function updateTotal(input) {
 	updateCartTotal(cartId, total, quantity);
 }
 
-// Hàm gọi API cập nhật tổng tiền (nếu cần thiết)
 function updateCartTotal(idCart, total, quantity) {
 	fetch(`cart/upd.htm?idCart=${idCart}&quantity=${quantity}&total=${total}`, {
 		method: 'GET',
@@ -121,8 +120,12 @@ function deleteCart(idCart) {
 			.then(response => response.json())  // Nếu bạn trả về JSON từ server
 			.then(data => {
 				console.log('Xóa sản phẩm thành công!!!', data);
-				// Sau khi xóa thành công, gọi hàm để xóa phần tử HTML
-				deleteElementById(idCart);  // Xóa phần tử HTML tương ứng với idCart
+				const allCartProducts = document.querySelectorAll('.cartProduct');
+				if (allCartProducts.length === 1) {
+					window.location.href = 'cart.htm';
+				} else {
+					deleteElementById(idCart);  // Xóa phần tử HTML tương ứng với idCart
+				}
 			})
 			.catch(error => console.error('Lỗi:', error));
 	} else {

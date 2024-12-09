@@ -34,6 +34,7 @@ let maxQuantity = 0;  // Biến lưu trữ số lượng tối đa
 function selectSize(button, sizeId, price, quantity) {
 	// Deselect tất cả các nút trước đó
 	const buttons = document.querySelectorAll('.sizebutton');
+	const oldQuantity = document.getElementById("quantityInput").value;
 	buttons.forEach(btn => {
 		btn.classList.remove('selected');
 		btn.textContent = btn.textContent.replace(" (Đang chọn)", "");  // Xóa chữ "Đang chọn"
@@ -49,7 +50,7 @@ function selectSize(button, sizeId, price, quantity) {
 
 	// Cập nhật số lượng tối đa dựa trên size được chọn
 	maxQuantity = parseInt(quantity);  // Thiết lập maxQuantity theo số lượng của sản phẩm
-	document.getElementById("quantityInput").value = 1;  // Reset lại số lượng về 1 khi chọn size mới
+	document.getElementById("quantityInput").value = oldQuantity;  // Reset lại số lượng về 1 khi chọn size mới
 }
 
 // Hàm thay đổi số lượng (tăng hoặc giảm)
