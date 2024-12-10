@@ -83,7 +83,7 @@ public class PaymentController {
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String perform(HttpSession session, ModelMap model) {
 		String email = (String) session.getAttribute("user");
-		if(email == null) {
+		if (email == null) {
 			return "redirect:/login.htm";
 		}
 		Account account = accountDAO.getAccountByEmail(email);
@@ -92,6 +92,9 @@ public class PaymentController {
 		// Lấy danh sách idCart từ session
 		@SuppressWarnings("unchecked")
 		List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
+		if (selectedCartIds == null) {
+			return "redirect:/home.htm";
+		}
 		List<Map<String, Object>> selectProducts = new ArrayList<>();
 		List<Product> dsProduct = productDAO.getAllProducts();
 		List<ProductDetail> dsDetail = productDetailDAO.getAllProductDetails();
@@ -136,7 +139,97 @@ public class PaymentController {
 		model.addAttribute("customer", customer);
 		model.addAttribute("paymentMethods", paymentMethodDAO.getAllPaymentMethods());
 		model.addAttribute("selectProducts", selectProducts);
-		return "payment/index"; // Trả về view
+		return "payment/index";
+	}
+
+	@RequestMapping(value = "/result", method = RequestMethod.POST)
+	public String cash(@RequestParam("phone") String phone, @RequestParam("name") String name,
+			@RequestParam("address") String address, @RequestParam("note") String note,
+			@RequestParam("paymentMethod") int paymentMethod, HttpServletRequest request, Model model,
+			HttpSession session) {
+		String email = (String) session.getAttribute("user");
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerById(account.getId());
+
+		Date currentDate = new Date();
+
+		List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
+
+		if (selectedCartIds.isEmpty()) {
+			model.addAttribute("message", "Đặt hàng không thành công!!!");
+			return "payment/success";
+		}
+
+		Set<OrderDetail> orderDetails = new HashSet<>();
+		double totalProductFee = 0.0;
+
+		for (int idCart : selectedCartIds) {
+
+			Cart cart = cartDAO.getCartById(idCart);
+			if (cart == null || cart.getProductDetail() == null) {
+				model.addAttribute("message", "Đặt hàng không thành công!!!");
+				return "payment/success";
+			}
+
+			OrderDetail orderDetail = new OrderDetail();
+			ProductDetail productDetail = cart.getProductDetail();
+
+			OrderDetailId orderDetailId = new OrderDetailId();
+			orderDetailId.setOrdersID(0);
+			orderDetailId.setProduct_detailsID(productDetail.getId());
+			orderDetail.setId(orderDetailId);
+
+			orderDetail.setQuantity(cart.getQuantity());
+			if (productDetail.getQuantity() < cart.getQuantity()) {
+				model.addAttribute("message", "Xin lỗi số lượng hàng không đủ!!!");
+				return "payment/success";
+			}
+			productDetail.setQuantity(productDetail.getQuantity() - cart.getQuantity());
+			productDetailDAO.updateProductDetail(productDetail);
+			orderDetail.setUnitPrice(cart.getTotalPrice() / cart.getQuantity());
+			orderDetail.setProductDetail(productDetail);
+
+			cart.setStatus(1);
+			cartDAO.updateCart(cart);
+
+			orderDetails.add(orderDetail);
+			totalProductFee += cart.getTotalPrice();
+		}
+
+		// Create order
+		Order order = new Order();
+		order.setAddress(address);
+		order.setCreateTime(currentDate);
+		order.setUpdateTime(currentDate);
+		order.setPaymentStatus(0);
+		order.setCustomer(customer);
+		order.setDescription(note);
+		order.setOrderStatus(orderStatusDAO.getOrderStatusById(2));
+		order.setPaymentMethod(paymentMethodDAO.getPaymentMethodById(paymentMethod));
+		order.setProductFee(totalProductFee);
+		order.setShipFee(16000);
+		order.setTotal(totalProductFee + 16000);
+
+		orderDAO.addOrder(order);
+
+		for (OrderDetail detail : orderDetails) {
+			detail.getId().setOrdersID(order.getId());
+			orderDetailDAO.addOrderDetail(detail);
+		}
+
+		order.setOrderDetails(orderDetails);
+		orderDAO.updateOrder(order);
+
+		customer.setName(name);
+		customer.setPhone(phone);
+		customerDAO.updateCustomer(customer);
+
+		session.removeAttribute("selectedCartIds");
+
+		model.addAttribute("message", "Đặt hàng thành công!!!");
+		model.addAttribute("newOrderId", order.getId());
+
+		return "payment/success";
 	}
 
 	@Autowired
@@ -145,25 +238,102 @@ public class PaymentController {
 	private Config config;
 
 	@RequestMapping(value = "/vnpay", method = RequestMethod.GET)
-	public String vnpay(@RequestParam("totalAmount") long totalAmount, @RequestParam("address") String address,
-			@RequestParam("note") String note, HttpSession session, HttpServletRequest request, Model model) {
+	public String vnpay(@RequestParam("phone") String phone, @RequestParam("name") String name,
+			@RequestParam("totalAmount") long totalAmount, @RequestParam("address") String address,
+			@RequestParam("note") String note, @RequestParam("paymentMethod") int paymentMethod, HttpSession session,
+			HttpServletRequest request, Model model) {
 		String language = "vn";
-		Map<String, Object> OrderInfo = new HashMap<String, Object>();
-		OrderInfo.put("totalAmount", totalAmount);
-		OrderInfo.put("address", address);
-		OrderInfo.put("note", note);
-		session.setAttribute("OrderInfo", OrderInfo);
+
 		try {
 			// Gọi service tạo URL thanh toán
 			JsonObject paymentResponse = paymentService.createPayment(request, totalAmount, "", language);
 
 			// Kiểm tra kết quả trả về
 			if (paymentResponse != null && "00".equals(paymentResponse.get("code").getAsString())) {
+
+				String email = (String) session.getAttribute("user");
+				Account account = accountDAO.getAccountByEmail(email);
+				Customer customer = customerDAO.getCustomerById(account.getId());
+
+				Date currentDate = new Date();
+
+				List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
+
+				if (selectedCartIds.isEmpty()) {
+					throw new IllegalArgumentException("No cart items selected");
+				}
+
+				Set<OrderDetail> orderDetails = new HashSet<>();
+				double totalProductFee = 0.0;
+
+				for (int idCart : selectedCartIds) {
+
+					Cart cart = cartDAO.getCartById(idCart);
+					if (cart == null || cart.getProductDetail() == null) {
+						throw new IllegalStateException("Invalid cart or product detail");
+					}
+
+					OrderDetail orderDetail = new OrderDetail();
+					ProductDetail productDetail = cart.getProductDetail();
+
+					OrderDetailId orderDetailId = new OrderDetailId();
+					orderDetailId.setOrdersID(0);
+					orderDetailId.setProduct_detailsID(productDetail.getId());
+					orderDetail.setId(orderDetailId);
+
+					orderDetail.setQuantity(cart.getQuantity());
+					if (productDetail.getQuantity() < cart.getQuantity()) {
+						model.addAttribute("message", "Xin lỗi số lượng hàng không đủ!!!");
+						return "payment/success";
+					}
+					productDetail.setQuantity(productDetail.getQuantity() - cart.getQuantity());
+					productDetailDAO.updateProductDetail(productDetail);
+					orderDetail.setUnitPrice(cart.getTotalPrice() / cart.getQuantity());
+					orderDetail.setProductDetail(productDetail);
+
+					cart.setStatus(1);
+					cartDAO.updateCart(cart);
+
+					orderDetails.add(orderDetail);
+					totalProductFee += cart.getTotalPrice();
+				}
+
+				Order order = new Order();
+				order.setAddress(address);
+				order.setCreateTime(currentDate);
+				order.setUpdateTime(currentDate);
+				order.setPaymentStatus(0);
+				order.setCustomer(customer);
+				order.setDescription(note);
+				order.setOrderStatus(orderStatusDAO.getOrderStatusById(1));
+				order.setPaymentMethod(paymentMethodDAO.getPaymentMethodById(paymentMethod));
+				order.setProductFee(totalAmount);
+				order.setShipFee(16000);
+				order.setTotal(totalAmount + 16000);
+
+				orderDAO.addOrder(order);
+
+				for (OrderDetail detail : orderDetails) {
+					detail.getId().setOrdersID(order.getId());
+					orderDetailDAO.addOrderDetail(detail);
+				}
+
+				order.setOrderDetails(orderDetails);
+				orderDAO.updateOrder(order);
+
+				customer.setName(name);
+				customer.setPhone(phone);
+				customerDAO.updateCustomer(customer);
+
+				session.removeAttribute("selectedCartIds");
+
+				session.setAttribute("newOrderId", order.getId());
+
 				// Lấy URL thanh toán
 				String paymentUrl = paymentResponse.get("data").getAsString();
-
 				// Chuyển hướng người dùng tới trang thanh toán
 				return "redirect:" + paymentUrl;
+
 			} else {
 				// Xử lý lỗi nếu có
 				model.addAttribute("error", "Không thể tạo thanh toán. Vui lòng thử lại!");
@@ -181,9 +351,7 @@ public class PaymentController {
 	public String vnpay(@RequestParam("vnp_Amount") double vnp_Amount,
 			@RequestParam("vnp_TransactionStatus") String vnp_TransactionStatus, HttpServletRequest request,
 			Model model, HttpSession session) {
-		String email = (String) session.getAttribute("user");
-		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		int newOrderId = (int) session.getAttribute("newOrderId");
 		// Khởi tạo Map để lưu các tham số
 		Map<String, String> fields = new HashMap<>();
 
@@ -218,92 +386,10 @@ public class PaymentController {
 		if (signValue.equals(vnp_SecureHash)) {
 			// Kiểm tra trạng thái giao dịch
 			if ("00".equals(vnp_TransactionStatus)) {
-				// Prepare current date
-				Date currentDate = new Date();
-
-				// Get selected cart IDs
-				List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
-
-				// Validate cart selection
-				if (selectedCartIds.isEmpty()) {
-					throw new IllegalArgumentException("No cart items selected");
-				}
-
-				// Prepare order details
-				Set<OrderDetail> orderDetails = new HashSet<>();
-				double totalProductFee = 0.0;
-
-				for (int idCart : selectedCartIds) {
-					// Retrieve cart and validate
-					Cart cart = cartDAO.getCartById(idCart);
-					if (cart == null || cart.getProductDetail() == null) {
-						throw new IllegalStateException("Invalid cart or product detail");
-					}
-
-					// Create order detail
-					OrderDetail orderDetail = new OrderDetail();
-					ProductDetail productDetail = cart.getProductDetail();
-
-					// Set order detail properties
-					OrderDetailId orderDetailId = new OrderDetailId();
-					orderDetailId.setOrdersID(0); // Will be set after order is saved
-					orderDetailId.setProduct_detailsID(productDetail.getId());
-					orderDetail.setId(orderDetailId);
-
-					orderDetail.setQuantity(cart.getQuantity());
-					orderDetail.setUnitPrice(cart.getTotalPrice() / cart.getQuantity());
-					orderDetail.setProductDetail(productDetail);
-
-					// Update cart status
-					cart.setStatus(1);
-					cartDAO.updateCart(cart);
-
-					// Accumulate order details
-					orderDetails.add(orderDetail);
-					totalProductFee += cart.getTotalPrice();
-				}
-
-				// Retrieve order information from session
-				Map<String, Object> orderInfo = (Map<String, Object>) session.getAttribute("OrderInfo");
-				if (orderInfo == null) {
-					throw new IllegalStateException("Order information not found in session");
-				}
-
-				// Normalize payment amount
-				vnp_Amount /= 100;
-
-				// Create order
-				Order order = new Order();
-				order.setAddress((String) orderInfo.get("address"));
-				order.setCreateTime(currentDate);
-				order.setUpdateTime(currentDate);
-				order.setPaymentStatus(1);
-				order.setCustomer(customer);
-				order.setDescription((String) orderInfo.get("note"));
-				order.setOrderStatus(orderStatusDAO.getOrderStatusById(1));
-				order.setPaymentMethod(paymentMethodDAO.getPaymentMethodById(1));
-				order.setProductFee(vnp_Amount);
-				order.setShipFee(16000);
-				order.setTotal(vnp_Amount + 16000);
-
-				// Save order first to generate ID
-				orderDAO.addOrder(order);
-
-				// Update order details with actual order ID
-				for (OrderDetail detail : orderDetails) {
-					detail.getId().setOrdersID(order.getId());
-					orderDetailDAO.addOrderDetail(detail);
-				}
-
-				// Set order details after saving individual details
-				order.setOrderDetails(orderDetails);
+				Order order = orderDAO.getOrderById(newOrderId);
+				order.setOrderStatus(orderStatusDAO.getOrderStatusById(2));
 				orderDAO.updateOrder(order);
 
-				// Clean up session
-				session.removeAttribute("selectedCartIds");
-				session.removeAttribute("OrderInfo");
-				// Thêm thông báo thành công vào model
-				model.addAttribute("message", "Thanh toán thành công!");
 			} else {
 				// Giao dịch không thành công
 				model.addAttribute("message", "Thanh toán không thành công!");
@@ -312,6 +398,9 @@ public class PaymentController {
 			// Nếu chữ ký không khớp
 			model.addAttribute("message", "Lỗi xác thực chữ ký!");
 		}
+
+		model.addAttribute("newOrderId", newOrderId);
+		session.removeAttribute("newOrderId");
 
 		return "payment/result"; // Trả về trang kết quả
 	}

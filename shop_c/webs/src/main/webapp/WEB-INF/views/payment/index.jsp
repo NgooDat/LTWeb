@@ -112,7 +112,7 @@ th {
 		</div>
 		<br>
 		<div>
-			<form action="payment/vnpay.htm" method="GET">
+			<form action="payment/result.htm" method="POST">
 				<div class="form-group">
 					<label for="name">Tên</label> <input type="text" id="name"
 						value="${customer.name}" name="name" required>
@@ -131,7 +131,7 @@ th {
 				</div>
 				<div class="form-group">
 					<label for="payment">Phương thức thanh toán</label> <select
-						id="payment" name="payment" required>
+						id="payment" name="paymentMethod" required>
 						<c:forEach var="paymentMethod" items="${paymentMethods}">
 							<option value="${paymentMethod.id}">${paymentMethod.name}</option>
 						</c:forEach>
@@ -146,4 +146,5 @@ th {
 		</div>
 	</div>
 </body>
+<script src="js/payment.js"></script>
 </html>

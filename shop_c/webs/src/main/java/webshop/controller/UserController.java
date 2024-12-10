@@ -1,6 +1,7 @@
 package webshop.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -81,14 +83,7 @@ public class UserController {
 
 		// Lọc sản phẩm dựa trên chuỗi search nếu được cung cấp
 		if (search != null && !search.isEmpty()) {
-			dsProduct = dsProduct.stream().filter(p -> p.getName().toLowerCase().contains(search.toLowerCase())) // Lọc
-																													// sản
-																													// phẩm
-																													// có
-																													// tên
-																													// chứa
-																													// chuỗi
-																													// search
+			dsProduct = dsProduct.stream().filter(p -> p.getName().toLowerCase().contains(search.toLowerCase()))
 					.collect(Collectors.toList());
 		}
 
@@ -107,79 +102,6 @@ public class UserController {
 		model.addAttribute("productInfo", productInfoList);
 
 		return "user/home";
-	}
-	
-	@RequestMapping("order")
-	public String order(HttpSession ses, ModelMap model) {
-
-		if (ses.getAttribute("user") == null) {
-			return "redirect:/login.htm";
-		}
-
-		String email = (String) ses.getAttribute("user");
-
-		Account acc = accd.getAccountByEmail(email);
-
-		Customer cus = cusd.getCustomerById(acc.getId());
-
-		List<Product> dsProduct = product.getAllProducts();
-
-		List<ProductDetail> dsDetail = prdd.getAllProductDetails();
-
-		List<Order> dsOrder = ordd.getAllOrders();
-
-		List<OrderDetail> dsOrdDetail = ordetail.getAllOrderDetails();
-
-		int givenCustomerId = cus.getId(); // Thay bằng ID của khách hàng mà bạn muốn lọc
-
-		List<Map<String, Object>> orderDetails = new ArrayList<>();
-
-		for (OrderDetail orderDetail : dsOrdDetail) {
-			// Tìm Order tương ứng với ordersID trong OrderDetail
-			Order order = dsOrder.stream().filter(o -> o.getId() == orderDetail.getOrder().getId()) // So sánh ID
-					.findFirst().orElse(null);
-
-			if (order != null && order.getCustomer().getId() == givenCustomerId) { // Kiểm tra điều kiện customersID
-				// Tìm ProductDetail tương ứng với product_detailsID trong OrderDetail
-				ProductDetail productDetail = dsDetail.stream()
-						.filter(detail -> detail.getId() == orderDetail.getProductDetail().getId()) // So sánh ID
-						.findFirst().orElse(null);
-
-				if (productDetail != null) {
-					// Tìm Product tương ứng với productsID trong ProductDetail
-					Product product = dsProduct.stream().filter(p -> p.getId() == productDetail.getProduct().getId()) // So
-																														// sánh
-																														// ID
-							.findFirst().orElse(null);
-
-					if (product != null) {
-						// Tính tổng tiền
-						int quantity = orderDetail.getQuantity();
-						int price = productDetail.getPrice();
-						double shipFee = order.getShipFee();
-						double total = price * quantity + shipFee;
-
-						// Lưu thông tin vào danh sách
-						Map<String, Object> detail = new HashMap<>();
-						detail.put("image", product.getImage()); // Hình ảnh sản phẩm
-						detail.put("name", product.getName()); // Tên sản phẩm
-						detail.put("size", productDetail.getSize().getId()); // Size
-						detail.put("price", price); // Giá
-						detail.put("quantity", quantity); // Số lượng
-						detail.put("total", total); // Tổng tiền
-						detail.put("status", order.getOrderStatus().getStatusName()); // Trạng thái đơn hàng
-						detail.put("id", order.getId()); // ID của đơn hàng
-
-						orderDetails.add(detail);
-					}
-				}
-			}
-		}
-
-		// Đưa orderDetails vào model để hiển thị trên giao diện
-		model.addAttribute("orderDetails", orderDetails);
-
-		return "user/order";
 	}
 
 	@RequestMapping("login")

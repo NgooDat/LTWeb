@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
 <!DOCTYPE html>
 <html style="font-size: 16px;">
@@ -31,39 +32,55 @@
 
 		<div class="u-clearfix u-sheet u-block-90d4-2">
 
-			<h2
-				class=" gioHang u-align-center-lg u-align-center-md u-align-center-sm u-align-center-xs u-custom-font u-font-ubuntu u-text u-text-default u-text-1">
-				Đơn hàng</h2>
+			<div class="u-cart-button-container">
+				<a href="home.htm"
+					class="u-active-none u-btn u-button-style u-cart-continue-shopping u-hover-none u-none u-text-body-color u-block-90d4-58"><span
+					class="u-icon u-block-90d4-59"><svg
+							xmlns="http://www.w3.org/2000/svg"
+							xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+							xml:space="preserve" class="u-svg-content"
+							viewBox="0 0 443.52 443.52" x="0px" y="0px" data-color="#000000"
+							style="width: 1em; height: 1em;">
+                                <g>
+                                <g>
+                                <path
+								d="M143.492,221.863L336.226,29.129c6.663-6.664,6.663-17.468,0-24.132c-6.665-6.662-17.468-6.662-24.132,0l-204.8,204.8    c-6.662,6.664-6.662,17.468,0,24.132l204.8,204.8c6.78,6.548,17.584,6.36,24.132-0.42c6.387-6.614,6.387-17.099,0-23.712    L143.492,221.863z">
+                                </path>
+                                </g>
+                                </g>
+                                </svg></span>&nbsp;Quay lại </a>
+
+				<h2
+					class=" gioHang u-align-center-lg u-align-center-md u-align-center-sm u-align-center-xs u-custom-font u-font-ubuntu u-text u-text-default u-text-1">
+					Đơn hàng</h2>
+			</div>
 
 			<div class="u-cart u-expanded-width u-layout-grid u-block-90d4-6">
 				<div
 					class="u-cart-products-table u-table u-table-responsive u-block-90d4-7">
 					<table class="u-table-entity u-block-90d4-12">
 						<colgroup>
-							<col width="35%">
-							<col width="8%">
-							<col width="12.5%">
-							<col width="10%">
-							<col width="12.5%">
+							<col>
+							<col width="20%">
+							<col>
+							<col width="15%">
+							<col width="15%">
 							<col width="13%">
-							<col width="10%">
 						</colgroup>
 						<thead class="u-custom-color-1 u-table-header u-block-90d4-13">
 							<tr style="height: 33px;">
 								<th
-									class="u-border-3 u-border-grey-15 u-table-cell u-block-90d4-14">Sản
-									phẩm</th>
+									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-14">Mã
+									đơn hàng</th>
 								<th
-									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-12">Size
-								</th>
+									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-12">Ngày
+									tạo</th>
 								<th
-									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-15">Giá
-								</th>
+									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-15">Tổng
+									số lượng</th>
 								<th
-									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-16">Số
-									lượng</th>
-								<th
-									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-17">Tiền+Ship</th>
+									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-16">Tổng
+									tiền</th>
 								<th
 									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-16">Trạng
 									thái</th>
@@ -75,23 +92,9 @@
 						<tbody
 							class="u-align-left u-table-alt-grey-5 u-table-body u-block-90d4-18">
 
-
-
-
 							<!--Sản phẩm nè-->
-							<c:forEach var="detail" items="${orderDetails}">
-								<tr style="height: 100px;">
-									<td
-										class="products-cart u-border-1 u-border-grey-15 u-table-cell u-block-90d4-41">
-										<img
-										class="u-cart-product-image u-image u-image-round u-preserve-proportions u-product-control u-radius-17 u-block-90d4-43"
-										src="images/products/${detail.image}" data-image-width="859"
-										data-image-height="1908">
-										<h2
-											class="u-cart-product-title u-product-control u-text u-block-90d4-44">
-											<a class="u-product-title-link" href="#">${detail.name}</a>
-										</h2>
-									</td>
+							<c:forEach var="order" items="${orders}">
+								<tr id="order${order.id}" style="height: 100px;">
 									<td
 										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-45">
 										<div
@@ -100,7 +103,10 @@
 												<div class="u-old-price"
 													style="text-decoration: line-through !important;"></div>
 												<div class="u-price"
-													style="font-weight: 700; font-size: 1rem;">${detail.size}</div>
+													style="font-weight: 700; font-size: 1rem;">
+													<a class="u-product-title-link"
+														href="order/orderdetail/${order.order.id}.htm">${order.order.id}</a>
+												</div>
 											</div>
 										</div>
 									</td>
@@ -112,7 +118,10 @@
 												<div class="u-old-price"
 													style="text-decoration: line-through !important;"></div>
 												<div class="u-price"
-													style="font-weight: 700; font-size: 1rem;">${detail.price}</div>
+													style="font-weight: 700; font-size: 1rem;">
+													<fmt:formatDate value="${order.order.createTime}"
+														pattern="dd/MM/yyyy HH:mm:ss" />
+												</div>
 											</div>
 										</div>
 									</td>
@@ -124,7 +133,7 @@
 												<div class="u-old-price"
 													style="text-decoration: line-through !important;"></div>
 												<div class="u-price"
-													style="font-weight: 700; font-size: 1rem;">${detail.quantity}</div>
+													style="font-weight: 700; font-size: 1rem;">${order.totalQuantity}</div>
 											</div>
 										</div>
 									</td>
@@ -136,10 +145,27 @@
 												<div class="u-old-price"
 													style="text-decoration: line-through !important;"></div>
 												<div class="u-price"
-													style="font-weight: 700; font-size: 1rem;">${detail.total}</div>
+													style="font-weight: 700; font-size: 1rem;">
+													<fmt:formatNumber value="${order.order.total}"
+														type="number" groupingUsed="true" />
+													₫
+												</div>
 											</div>
 										</div>
 									</td>
+									<td
+										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-45">
+										<div
+											class="center u-cart-product-price u-product-control u-product-price u-block-90d4-46">
+											<div class="u-price-wrapper">
+												<div class="u-old-price"
+													style="text-decoration: line-through !important;"></div>
+												<div class="u-price"
+													style="font-weight: 700; font-size: 1rem;">${order.order.orderStatus.statusName}</div>
+											</div>
+										</div>
+									</td>
+									<%-- 
 									<td
 										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-50">
 										<div
@@ -150,56 +176,29 @@
 												<div class="u-price" style="font-weight: 400;">${detail.status}</div>
 											</div>
 										</div>
-									</td>
+									</td> --%>
 									<td
-										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-50">
-										<a class="center delete"> <span
-											class="center u-cart-remove-item u-icon u-icon-rectangle u-block-90d4-42">
-												<svg xmlns="http://www.w3.org/2000/svg"
-													xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
-													xml:space="preserve" class="u-svg-content" fill="black"
-													viewBox="0 0 52 52" x="0px" y="0px" data-color="#000000"
-													style="width: 1em; height: 1em;">
-                                                <g>
-                                                <path
-														d="M26,0C11.664,0,0,11.663,0,26s11.664,26,26,26s26-11.663,26-26S40.336,0,26,0z M26,50C12.767,50,2,39.233,2,26
-                                                      S12.767,2,26,2s24,10.767,24,24S39.233,50,26,50z"></path>
-                                                <path
-														d="M35.707,16.293c-0.391-0.391-1.023-0.391-1.414,0L26,24.586l-8.293-8.293c-0.391-0.391-1.023-0.391-1.414,0
-                                                    s-0.391,1.023,0,1.414L24.586,26l-8.293,8.293c-0.391,0.391-0.391,1.023,0,1.414C16.488,35.902,16.744,36,17,36
-                                                    s0.512-0.098,0.707-0.293L26,27.414l8.293,8.293C34.488,35.902,34.744,36,35,36s0.512-0.098,0.707-0.293
-                                                    c0.391-0.391,0.391-1.023,0-1.414L27.414,26l8.293-8.293C36.098,17.316,36.098,16.684,35.707,16.293z">
-                                                </path>
-                                                </g>
-                                                </svg>
-										</span></a>
+										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-45">
+										<div
+											class="center u-cart-product-price u-product-control u-product-price u-block-90d4-46">
+											<div class="u-price-wrapper">
+												<div class="u-old-price"
+													style="text-decoration: line-through !important;"></div>
+												<div class="u-price"
+													style="font-weight: 700; font-size: 1rem;">
+													<a class="u-product-title-link"
+														href="order/orderdetail/${order.order.id}.htm">Xem chi
+														tiết</a>
+												</div>
+											</div>
+										</div>
 									</td>
-
 								</tr>
 							</c:forEach>
 
 						</tbody>
 
 					</table>
-				</div>
-				<div class="u-cart-button-container">
-					<a href="home.htm"
-						class="u-active-none u-btn u-button-style u-cart-continue-shopping u-hover-none u-none u-text-body-color u-block-90d4-58"><span
-						class="u-icon u-block-90d4-59"><svg
-								xmlns="http://www.w3.org/2000/svg"
-								xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
-								xml:space="preserve" class="u-svg-content"
-								viewBox="0 0 443.52 443.52" x="0px" y="0px" data-color="#000000"
-								style="width: 1em; height: 1em;">
-                                <g>
-                                <g>
-                                <path
-									d="M143.492,221.863L336.226,29.129c6.663-6.664,6.663-17.468,0-24.132c-6.665-6.662-17.468-6.662-24.132,0l-204.8,204.8    c-6.662,6.664-6.662,17.468,0,24.132l204.8,204.8c6.78,6.548,17.584,6.36,24.132-0.42c6.387-6.614,6.387-17.099,0-23.712    L143.492,221.863z">
-                                </path>
-                                </g>
-                                </g>
-                                </svg></span>&nbsp;Quay lại </a>
-
 				</div>
 				<div class="u-cart-blocks-container">
 					<div class="u-cart-block u-indent-30"></div>

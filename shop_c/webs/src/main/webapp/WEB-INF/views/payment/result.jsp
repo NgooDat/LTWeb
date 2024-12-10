@@ -9,6 +9,7 @@
 <%@page import="java.util.Map"%>
 <%@page import="java.util.HashMap"%>
 <%@page import="webshop.paymentMethod.Config"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -20,6 +21,7 @@
         <meta name="description" content="">
         <meta name="author" content="">
         <title>KẾT QUẢ THANH TOÁN</title>
+		<base href="${pageContext.servletContext.contextPath}/">
         <!-- Bootstrap core CSS -->
         <link href="/vnpay_jsp/assets/bootstrap.min.css" rel="stylesheet"/>
         <!-- Custom styles for this template -->
@@ -113,7 +115,11 @@
                             }
                         %></label>
                 </div> 
-                <a href="http://localhost:8080/shop_c/home.htm">Quay lại trang chủ</a>
+				<c:choose>
+					<c:when test="${not empty newOrderId}">
+						<a href="order/orderdetail/${newOrderId}.htm">Xem đơn hàng</a>
+					</c:when>
+				</c:choose>
             </div>
             <p>
                 &nbsp;
