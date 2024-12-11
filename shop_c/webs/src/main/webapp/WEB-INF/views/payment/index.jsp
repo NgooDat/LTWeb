@@ -7,6 +7,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Checkout Page</title>
+<base href="${pageContext.servletContext.contextPath}/">
 <style>
 body {
 	font-family: Arial, sans-serif;
@@ -80,7 +81,7 @@ th {
 	<div class="container">
 		<h1>Thanh toán</h1>
 		<div>
-			<table>
+			<table id="${idOrder}">
 				<thead>
 					<tr>
 						<th>Tên sản phẩm</th>
@@ -92,7 +93,8 @@ th {
 				<tbody>
 					<c:forEach var="selectProduct" items="${selectProducts}">
 						<tr id="product${selectProduct.cartid}">
-							<td>${selectProduct.name}</td>
+							<td><img src="images/products/${selectProduct.image}" style="width: 50px;">
+								${selectProduct.name}</td>
 							<td>${selectProduct.size}</td>
 							<td>${selectProduct.quantity}</td>
 							<td>${selectProduct.price * selectProduct.quantity}</td>
@@ -112,7 +114,7 @@ th {
 		</div>
 		<br>
 		<div>
-			<form action="payment/result.htm" method="POST">
+			<form action="" method="">
 				<div class="form-group">
 					<label for="name">Tên</label> <input type="text" id="name"
 						value="${customer.name}" name="name" required>

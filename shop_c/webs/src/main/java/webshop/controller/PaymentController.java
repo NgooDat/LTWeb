@@ -30,6 +30,7 @@ import java.net.URLEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -139,19 +140,80 @@ public class PaymentController {
 		model.addAttribute("customer", customer);
 		model.addAttribute("paymentMethods", paymentMethodDAO.getAllPaymentMethods());
 		model.addAttribute("selectProducts", selectProducts);
+		model.addAttribute("idOrder", 0);
+		return "payment/index";
+	}
+
+	@RequestMapping(value = "/repurchase/{idOrder}", method = RequestMethod.GET)
+	public String repurchase(@PathVariable("idOrder") Integer idOrder, HttpSession session, ModelMap model) {
+		String email = (String) session.getAttribute("user");
+		if (email == null) {
+			return "redirect:/login.htm";
+		}
+		if (idOrder == null) {
+			return "redirect:/home.htm";
+		}
+		Order order = orderDAO.getOrderById(idOrder);
+		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
+
+		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)) {
+			return "redirect:/home.htm";
+		}
+
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerById(account.getId());
+
+		List<Map<String, Object>> selectProducts = new ArrayList<>();
+		List<Product> dsProduct = productDAO.getAllProducts();
+		List<ProductDetail> dsDetail = productDetailDAO.getAllProductDetails();
+
+		for (OrderDetail orderDetail : orderDetails) {
+			// Tìm ProductDetail tương ứng với product_detailsID trong orderDetail
+			ProductDetail productDetail = dsDetail.stream()
+					.filter(detail -> detail.getId() == orderDetail.getProductDetail().getId()).findFirst()
+					.orElse(null);
+
+			if (productDetail != null) {
+				// Tìm Product tương ứng với productID trong ProductDetail
+				Product product = dsProduct.stream().filter(p -> p.getId() == productDetail.getProduct().getId())
+						.findFirst().orElse(null);
+
+				if (product != null) {
+					// Tính tổng tiền
+					int quantity = orderDetail.getQuantity();
+					int price = productDetail.getPrice();
+					int total = price * quantity;
+
+					// Lưu thông tin vào danh sách
+					Map<String, Object> selectProduct = new HashMap<>();
+					selectProduct.put("cartid", 0);
+					selectProduct.put("image", product.getImage());
+					selectProduct.put("name", product.getName());
+					selectProduct.put("size", productDetail.getSize().getId());
+					selectProduct.put("productDetailId", productDetail.getId());
+					selectProduct.put("price", price);
+					selectProduct.put("quantity", quantity);
+					selectProduct.put("maxQuantity", productDetail.getQuantity());
+					selectProduct.put("total", total);
+
+					selectProducts.add(selectProduct);
+				}
+			}
+		}
+		model.addAttribute("customer", customer);
+		model.addAttribute("idOrder", idOrder);
+		model.addAttribute("paymentMethods", paymentMethodDAO.getAllPaymentMethods());
+		model.addAttribute("selectProducts", selectProducts);
 		return "payment/index";
 	}
 
 	@RequestMapping(value = "/result", method = RequestMethod.POST)
 	public String cash(@RequestParam("phone") String phone, @RequestParam("name") String name,
 			@RequestParam("address") String address, @RequestParam("note") String note,
-			@RequestParam("paymentMethod") int paymentMethod, HttpServletRequest request, Model model,
-			HttpSession session) {
+			@RequestParam("paymentMethod") int paymentMethod, Model model, HttpSession session) {
 		String email = (String) session.getAttribute("user");
 		Account account = accountDAO.getAccountByEmail(email);
 		Customer customer = customerDAO.getCustomerById(account.getId());
-
-		Date currentDate = new Date();
 
 		List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
 
@@ -159,6 +221,8 @@ public class PaymentController {
 			model.addAttribute("message", "Đặt hàng không thành công!!!");
 			return "payment/success";
 		}
+
+		Date currentDate = new Date();
 
 		Set<OrderDetail> orderDetails = new HashSet<>();
 		double totalProductFee = 0.0;
@@ -212,9 +276,9 @@ public class PaymentController {
 
 		orderDAO.addOrder(order);
 
-		for (OrderDetail detail : orderDetails) {
-			detail.getId().setOrdersID(order.getId());
-			orderDetailDAO.addOrderDetail(detail);
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetail.getId().setOrdersID(order.getId());
+			orderDetailDAO.addOrderDetail(orderDetail);
 		}
 
 		order.setOrderDetails(orderDetails);
@@ -225,6 +289,82 @@ public class PaymentController {
 		customerDAO.updateCustomer(customer);
 
 		session.removeAttribute("selectedCartIds");
+
+		model.addAttribute("message", "Đặt hàng thành công!!!");
+		model.addAttribute("newOrderId", order.getId());
+
+		return "payment/success";
+	}
+
+	@RequestMapping(value = "/repurchase/{idOrder}", method = RequestMethod.POST)
+	public String cash(@PathVariable("idOrder") Integer idOrder, @RequestParam("phone") String phone,
+			@RequestParam("name") String name, @RequestParam("address") String address,
+			@RequestParam("note") String note, @RequestParam("paymentMethod") int paymentMethod, Model model,
+			HttpSession session) {
+		String email = (String) session.getAttribute("user");
+		if (email == null) {
+			return "redirect:/login.htm";
+		}
+		if (idOrder == null) {
+			return "redirect:/home.htm";
+		}
+		Order order = orderDAO.getOrderById(idOrder);
+		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
+
+		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)) {
+			return "redirect:/home.htm";
+		}
+
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerById(account.getId());
+
+		Date currentDate = new Date();
+
+		Set<OrderDetail> setOrderDetails = new HashSet<>();
+		double totalProductFee = 0.0;
+		for (OrderDetail orderDetail : orderDetails) {
+			ProductDetail productDetail = orderDetail.getProductDetail();
+
+			OrderDetailId orderDetailId = new OrderDetailId();
+			orderDetailId.setOrdersID(0);
+			orderDetailId.setProduct_detailsID(productDetail.getId());
+			orderDetail.setId(orderDetailId);
+
+			orderDetail.setQuantity(orderDetail.getQuantity());
+			if (productDetail.getQuantity() < orderDetail.getQuantity()) {
+				model.addAttribute("message", "Xin lỗi số lượng hàng không đủ!!!");
+				return "payment/success";
+			}
+			productDetail.setQuantity(productDetail.getQuantity() - orderDetail.getQuantity());
+			productDetailDAO.updateProductDetail(productDetail);
+
+			setOrderDetails.add(orderDetail);
+		}
+		order.setAddress(address);
+		order.setCreateTime(currentDate);
+		order.setUpdateTime(currentDate);
+		order.setPaymentStatus(0);
+		order.setCustomer(customer);
+		order.setDescription(note);
+		order.setOrderStatus(orderStatusDAO.getOrderStatusById(2));
+		order.setPaymentMethod(paymentMethodDAO.getPaymentMethodById(paymentMethod));
+		order.setProductFee(totalProductFee);
+		order.setShipFee(16000);
+		order.setTotal(totalProductFee + 16000);
+
+		orderDAO.addOrder(order);
+
+		for (OrderDetail detail : orderDetails) {
+			detail.getId().setOrdersID(order.getId());
+			orderDetailDAO.addOrderDetail(detail);
+		}
+
+		order.setOrderDetails(setOrderDetails);
+		orderDAO.updateOrder(order);
+
+		customer.setName(name);
+		customer.setPhone(phone);
+		customerDAO.updateCustomer(customer);
 
 		model.addAttribute("message", "Đặt hàng thành công!!!");
 		model.addAttribute("newOrderId", order.getId());
@@ -264,7 +404,6 @@ public class PaymentController {
 				}
 
 				Set<OrderDetail> orderDetails = new HashSet<>();
-				double totalProductFee = 0.0;
 
 				for (int idCart : selectedCartIds) {
 
@@ -295,7 +434,6 @@ public class PaymentController {
 					cartDAO.updateCart(cart);
 
 					orderDetails.add(orderDetail);
-					totalProductFee += cart.getTotalPrice();
 				}
 
 				Order order = new Order();
@@ -329,6 +467,145 @@ public class PaymentController {
 
 				session.setAttribute("newOrderId", order.getId());
 
+				// Lấy URL thanh toán
+				String paymentUrl = paymentResponse.get("data").getAsString();
+				// Chuyển hướng người dùng tới trang thanh toán
+				return "redirect:" + paymentUrl;
+
+			} else {
+				// Xử lý lỗi nếu có
+				model.addAttribute("error", "Không thể tạo thanh toán. Vui lòng thử lại!");
+				return "error"; // Trang hiển thị lỗi
+			}
+		} catch (Exception e) {
+			// Log lỗi và hiển thị thông báo lỗi
+			e.printStackTrace();
+			model.addAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+			return "error"; // Trang hiển thị lỗi
+		}
+	}
+
+	@RequestMapping(value = "/repurchase/vnpay/{idOrder}", method = RequestMethod.GET)
+	public String vnpay(@PathVariable("idOrder") Integer idOrder, @RequestParam("phone") String phone,
+			@RequestParam("name") String name, @RequestParam("totalAmount") long totalAmount,
+			@RequestParam("address") String address, @RequestParam("note") String note,
+			@RequestParam("paymentMethod") int paymentMethod, HttpSession session, HttpServletRequest request,
+			Model model) {
+		String language = "vn";
+		String email = (String) session.getAttribute("user");
+		if (email == null) {
+			return "redirect:/login.htm";
+		}
+		if (idOrder == null) {
+			return "redirect:/home.htm";
+		}
+		Order order = orderDAO.getOrderById(idOrder);
+		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
+
+		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)) {
+			return "redirect:/home.htm";
+		}
+
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerById(account.getId());
+
+		try {
+			// Gọi service tạo URL thanh toán
+			JsonObject paymentResponse = paymentService.createPayment(request, totalAmount, "", language);
+
+			// Kiểm tra kết quả trả về
+			if (paymentResponse != null && "00".equals(paymentResponse.get("code").getAsString())) {
+
+				Date currentDate = new Date();
+
+				Set<OrderDetail> setOrderDetails = new HashSet<>();
+
+				for (OrderDetail orderDetail : orderDetails) {
+					ProductDetail productDetail = orderDetail.getProductDetail();
+
+					OrderDetailId orderDetailId = new OrderDetailId();
+
+					if (productDetail.getQuantity() < orderDetail.getQuantity()) {
+						model.addAttribute("message", "Xin lỗi số lượng hàng không đủ!!!");
+						return "payment/success";
+					}
+					productDetail.setQuantity(productDetail.getQuantity() - orderDetail.getQuantity());
+					productDetailDAO.updateProductDetail(productDetail);
+
+					setOrderDetails.add(orderDetail);
+				}
+
+				order.setAddress(address);
+				order.setCreateTime(currentDate);
+				order.setUpdateTime(currentDate);
+				order.setPaymentStatus(0);
+				order.setCustomer(customer);
+				order.setDescription(note);
+				order.setOrderStatus(orderStatusDAO.getOrderStatusById(1));
+				order.setPaymentMethod(paymentMethodDAO.getPaymentMethodById(paymentMethod));
+				order.setProductFee(totalAmount);
+				order.setShipFee(16000);
+				order.setTotal(totalAmount + 16000);
+
+				orderDAO.addOrder(order);
+
+				for (OrderDetail orderDetail : orderDetails) {
+					orderDetail.getId().setOrdersID(order.getId());
+					orderDetailDAO.addOrderDetail(orderDetail);
+				}
+
+				order.setOrderDetails(setOrderDetails);
+				orderDAO.updateOrder(order);
+
+				customer.setName(name);
+				customer.setPhone(phone);
+				customerDAO.updateCustomer(customer);
+
+				session.setAttribute("newOrderId", order.getId());
+
+				// Lấy URL thanh toán
+				String paymentUrl = paymentResponse.get("data").getAsString();
+				// Chuyển hướng người dùng tới trang thanh toán
+				return "redirect:" + paymentUrl;
+
+			} else {
+				// Xử lý lỗi nếu có
+				model.addAttribute("error", "Không thể tạo thanh toán. Vui lòng thử lại!");
+				return "error"; // Trang hiển thị lỗi
+			}
+		} catch (Exception e) {
+			// Log lỗi và hiển thị thông báo lỗi
+			e.printStackTrace();
+			model.addAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+			return "error"; // Trang hiển thị lỗi
+		}
+	}
+
+	@RequestMapping(value = "/{idOrder}", method = RequestMethod.GET)
+	public String repayment(@PathVariable("idOrder") Integer idOrder, HttpSession session, HttpServletRequest request,
+			Model model) {
+		String language = "vn";
+		String email = (String) session.getAttribute("user");
+		if (email == null) {
+			return "redirect:/login.htm";
+		}
+		if (idOrder == null) {
+			return "redirect:/home.htm";
+		}
+		Order order = orderDAO.getOrderById(idOrder);
+		if (order == null || order.getOrderStatus().getId() != 1) {
+			return "redirect:/home.htm";
+		}
+		long totalAmount = (long) order.getTotal();
+
+		try {
+			// Gọi service tạo URL thanh toán
+			JsonObject paymentResponse = paymentService.createPayment(request, totalAmount, "", language);
+
+			// Kiểm tra kết quả trả về
+			if (paymentResponse != null && "00".equals(paymentResponse.get("code").getAsString())) {
+
+				session.setAttribute("newOrderId", idOrder);
 				// Lấy URL thanh toán
 				String paymentUrl = paymentResponse.get("data").getAsString();
 				// Chuyển hướng người dùng tới trang thanh toán
@@ -386,8 +663,10 @@ public class PaymentController {
 		if (signValue.equals(vnp_SecureHash)) {
 			// Kiểm tra trạng thái giao dịch
 			if ("00".equals(vnp_TransactionStatus)) {
+				Date currentDate = new Date();
 				Order order = orderDAO.getOrderById(newOrderId);
 				order.setOrderStatus(orderStatusDAO.getOrderStatusById(2));
+				order.setUpdateTime(currentDate);
 				orderDAO.updateOrder(order);
 
 			} else {
@@ -404,4 +683,5 @@ public class PaymentController {
 
 		return "payment/result"; // Trả về trang kết quả
 	}
+
 }

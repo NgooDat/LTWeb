@@ -62,9 +62,14 @@
 					<div class="order-info">
 						<p class="left">
 							<strong>Mã đơn hàng: </strong>${order.id}</p>
-						<p class="right">
+						<p class="center">
 							<strong>Ngày tạo: </strong>
 							<fmt:formatDate value="${order.createTime}"
+								pattern="dd/MM/yyyy HH:mm:ss" />
+						</p>
+						<p class="right">
+							<strong>Ngày cập nhật: </strong>
+							<fmt:formatDate value="${order.updateTime}"
 								pattern="dd/MM/yyyy HH:mm:ss" />
 						</p>
 					</div>
@@ -90,7 +95,11 @@
 								${order.orderStatus.statusName} </span>
 						</p>
 					</div>
-
+					<div class="order-info">
+						<p class="left">
+							<strong>Địa chỉ: </strong>${order.address}</p>
+						<p class="center">
+					</div>
 					<table class="u-table-entity u-block-90d4-12">
 						<colgroup>
 							<col width="35%">
@@ -128,10 +137,8 @@
 						</thead>
 						<tbody
 							class="u-align-left u-table-alt-grey-5 u-table-body u-block-90d4-18">
-
-
-
-
+							
+							<c:set var="x" value="true" scope="page" />
 							<!--Sản phẩm nè-->
 							<c:forEach var="orderDetail" items="${orderDetails}">
 								<tr style="height: 100px;">
@@ -221,6 +228,7 @@
 														</c:when>
 														<c:otherwise>
 															Không đủ hàng
+            												<c:set var="x" value="false" scope="page" />
 														</c:otherwise>
 													</c:choose>
 												</div>
@@ -260,17 +268,20 @@
 								₫
 							</p>
 						</div>
-						<c:if
-							test="${order.orderStatus.id == 4 || order.orderStatus.id == 5}">
-							<a href="#"
-								class="u-btn u-btn-round u-button-style u-radius u-btn-1">Mua
-								lại</a>
-						</c:if>
-						<c:if test="${order.orderStatus.id == 1}">
-							<a href="#"
-								class="u-btn u-btn-round u-button-style u-radius u-btn-1">Thanh
-								toán</a>
-						</c:if>
+						<c:choose>
+			                <c:when test="${order.orderStatus.id == 1}">
+			                    <a href="payment/${order.id}.htm"
+								class="u-btn u-btn-round u-button-style u-radius u-btn-1">Thanh toán</a>
+			                </c:when>
+			                <c:when test="${(order.orderStatus.id == 4 || order.orderStatus.id == 5) && x}">
+			                    <a href="payment/repurchase/${order.id}.htm"
+								class="u-btn u-btn-round u-button-style u-radius u-btn-1">Mua lại</a>
+			                </c:when>
+			                <c:when test="${order.orderStatus.id == 2}">
+			                    <a href="payment.htm"
+								class="u-btn u-btn-round u-button-style u-radius u-btn-1">Hủy đơn</a>
+			                </c:when>
+			            </c:choose>
 					</div>
 
 				</div>

@@ -81,7 +81,7 @@ public class OrderController {
 				ordersList.add(ordersMap);
 			}
 		}
-		
+
 		Collections.reverse(ordersList);
 		model.addAttribute("orders", ordersList);
 		return "user/order/index";
@@ -92,7 +92,7 @@ public class OrderController {
 
 		if (session.getAttribute("user") == null) {
 			return "redirect:/login.htm";
-		}else if(idOrder == null) {
+		} else if (idOrder == null) {
 			return "redirect:/order.htm";
 		}
 
@@ -101,6 +101,10 @@ public class OrderController {
 		Customer customer = customerDAO.getCustomerById(account.getId());
 
 		Order order = orderDAO.getOrderById(idOrder);
+		if (order == null) {
+			return "redirect:/order.htm";
+		}
+
 		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
 		List<Map<String, Object>> orderDetailsList = new ArrayList<Map<String, Object>>();
 
@@ -115,7 +119,7 @@ public class OrderController {
 				orderDetailsMap.put("orderDetail", orderDetail);
 				orderDetailsList.add(orderDetailsMap);
 			}
-		}else {
+		} else {
 			return "redirect:/order.htm";
 		}
 
