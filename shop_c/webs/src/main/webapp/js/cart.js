@@ -108,6 +108,9 @@ window.onload = function() {
 function deleteCart(idCart) {
 	// Hiển thị thông báo xác nhận
 	const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?");
+	const oldQuantityCartText = document.querySelector('#quantityCart').innerHTML.trim();
+	const oldQuantityCart = parseInt(oldQuantityCartText, 10) || 0;
+	const newQuantityCart = oldQuantityCart - 1;
 
 	// Nếu người dùng chọn "OK" (true), tiếp tục thực hiện xóa
 	if (isConfirmed) {
@@ -125,6 +128,7 @@ function deleteCart(idCart) {
 					window.location.href = 'cart.htm';
 				} else {
 					deleteElementById(idCart);  // Xóa phần tử HTML tương ứng với idCart
+					document.querySelector('#quantityCart').innerHTML = newQuantityCart;
 				}
 			})
 			.catch(error => console.error('Lỗi:', error));

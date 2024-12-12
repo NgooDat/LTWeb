@@ -104,8 +104,8 @@
                               c-0.8,0-1.5,0.7-1.5,1.5s0.7,1.5,1.5,1.5s1.5-0.7,1.5-1.5S13.3,13,12.5,13L12.5,13z M4.5,13C3.7,13,3,13.7,3,14.5S3.7,16,4.5,16
                               S6,15.3,6,14.5S5.3,13,4.5,13L4.5,13z"></path>
                         </svg>
-                        <span class="u-icon-circle u-palette-1-base u-shopping-cart-count"
-                              style="font-size: 0.75rem;"><!--shopping_cart_count-->0<!--/shopping_cart_count--></span>
+                        <span id="quantityCart" class="u-icon-circle u-palette-1-base u-shopping-cart-count"
+                              style="font-size: 0.75rem;">${quantityCart != null ? quantityCart : 0}</span>
                     </span>
                 </a><!--/shopping_cart-->
                 <form style="max-width: 450px; transform: translateX(15px);" action="search.htm" class="u-border-1 u-border-grey-30 u-radius u-search u-search-left u-white u-search-1"

@@ -56,6 +56,8 @@
 					Chi tiết đơn hàng</h2>
 			</div>
 
+			<c:set var="y" value="false" scope="page" />
+
 			<div class="u-cart u-expanded-width u-layout-grid u-block-90d4-6">
 				<div
 					class="u-cart-products-table u-table u-table-responsive u-block-90d4-7">
@@ -83,6 +85,8 @@
 						            <c:choose>
 						                <c:when test="${order.orderStatus.id == 1 || order.orderStatus.id == 5}">
 						                    color: red;
+						                    <c:if test="${order.orderStatus.id == 5}">
+						                    <c:set var="y" value="true" scope="page" /></c:if>
 						                </c:when>
 						                <c:when test="${order.orderStatus.id == 4}">
 						                    color: green;
@@ -98,7 +102,10 @@
 					<div class="order-info">
 						<p class="left">
 							<strong>Địa chỉ: </strong>${order.address}</p>
-						<p class="center">
+						<p class="right">
+							<c:if test="${y}">
+								<strong>Lý do hủy đơn: </strong>${order.reason.name}</c:if>
+						</p>
 					</div>
 					<table class="u-table-entity u-block-90d4-12">
 						<colgroup>
@@ -137,7 +144,7 @@
 						</thead>
 						<tbody
 							class="u-align-left u-table-alt-grey-5 u-table-body u-block-90d4-18">
-							
+
 							<c:set var="x" value="true" scope="page" />
 							<!--Sản phẩm nè-->
 							<c:forEach var="orderDetail" items="${orderDetails}">
@@ -262,30 +269,198 @@
 					<div class="u-cart-block u-indent-30">
 						<div class="order-info">
 							<p class="left">
-								<strong>Tổng tiền: </strong>
+								<strong>Tổng tiền sản phẩm: </strong>
+								<fmt:formatNumber value="${order.productFee}" type="number"
+									groupingUsed="true" />
+								₫
+							</p>
+						</div>
+						<div class="order-info">
+							<p class="left">
+								<strong>Phí giao hàng: </strong>
+								<fmt:formatNumber value="${order.shipFee}" type="number"
+									groupingUsed="true" />
+								₫
+							</p>
+						</div>
+						<div class="order-info">
+							<p class="left">
+								<strong>Thành tiền: </strong>
 								<fmt:formatNumber value="${order.total}" type="number"
 									groupingUsed="true" />
 								₫
 							</p>
 						</div>
+						<div class="order-info">
+							<p class="left">
+								<strong>Ghi chú: </strong>
+								<c:choose>
+									<c:when
+										test="${not empty order.description || order.description != ''}">
+								${order.description}
+									</c:when>
+									<c:otherwise>
+									Không có.
+									</c:otherwise>
+								</c:choose>
+							</p>
+						</div>
 						<c:choose>
-			                <c:when test="${order.orderStatus.id == 1}">
-			                    <a href="payment/${order.id}.htm"
-								class="u-btn u-btn-round u-button-style u-radius u-btn-1">Thanh toán</a>
-			                </c:when>
-			                <c:when test="${(order.orderStatus.id == 4 || order.orderStatus.id == 5) && x}">
-			                    <a href="payment/repurchase/${order.id}.htm"
-								class="u-btn u-btn-round u-button-style u-radius u-btn-1">Mua lại</a>
-			                </c:when>
-			                <c:when test="${order.orderStatus.id == 2}">
-			                    <a href="payment.htm"
-								class="u-btn u-btn-round u-button-style u-radius u-btn-1">Hủy đơn</a>
-			                </c:when>
-			            </c:choose>
+							<c:when test="${order.orderStatus.id == 1}">
+								<div style="display: ruby;">
+									<a href="payment/${order.id}.htm"
+										class="u-btn u-btn-round u-button-style u-radius u-btn-1">Thanh
+										toán</a>
+									<button
+										class="u-btn u-btn-round u-button-style u-radius u-btn-1"
+										style="background-color: red;"
+										onclick="openCancelModal(${order.id})">Hủy đơn</button>
+								</div>
+							</c:when>
+							<c:when
+								test="${(order.orderStatus.id == 4 || order.orderStatus.id == 5) && x}">
+								<a href="payment/repurchase/${order.id}.htm"
+									class="u-btn u-btn-round u-button-style u-radius u-btn-1">Mua
+									lại</a>
+							</c:when>
+							<c:when test="${order.orderStatus.id == 2}">
+								<div style="display: ruby;">
+									<c:if test="${order.paymentStatus == 0}">
+										<a href="payment/${order.id}.htm"
+											class="u-btn u-btn-round u-button-style u-radius u-btn-1">Thanh
+											toán VNPay</a>
+									</c:if>
+									<button
+										class="u-btn u-btn-round u-button-style u-radius u-btn-1"
+										style="background-color: red;"
+										onclick="openCancelModal(${order.id})">Hủy đơn</button>
+								</div>
+							</c:when>
+						</c:choose>
+					</div>
+
+					<!-- Modal for Cancellation Reason -->
+					<div id="cancelModal" class="modal" style="display: none;">
+						<div class="modal-content">
+							<h3>Chọn lý do hủy</h3>
+							<div class="reasons-container">
+								<ul id="cancelReasons">
+									<c:forEach var="cancelReason" items="${cancelReasons}">
+										<c:if test="${cancelReason.id < 6}">
+											<li><input type="radio" name="reason"
+												value="${cancelReason.id}" id="reason${cancelReason.id}">
+												<label for="reason${cancelReason.id}">${cancelReason.name}</label>
+											</li>
+										</c:if>
+									</c:forEach>
+								</ul>
+							</div>
+							<div class="modal-actions">
+								<button onclick="confirmCancel()" class="confirm-btn">Xác
+									nhận</button>
+								<button onclick="closeCancelModal()" class="cancel-btn">Hủy</button>
+							</div>
+						</div>
 					</div>
 
 				</div>
+				<script src="js/orderDetail.js"></script>
 				<style>
+/* Modal container */
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.6);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+/* Modal content box */
+.modal-content {
+	background: #ffffff;
+	padding: 30px;
+	border-radius: 12px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+	text-align: center;
+	width: 90%;
+	max-width: 500px;
+	animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Reasons container styling */
+.reasons-container {
+	margin: 20px 0;
+	max-height: 200px;
+	overflow-y: auto;
+	padding-right: 10px;
+}
+
+.reasons-container ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.reasons-container li {
+	display: flex;
+	align-items: center;
+	margin: 10px 0;
+}
+
+.reasons-container input[type="radio"] {
+	margin-right: 10px;
+}
+
+/* Modal action buttons */
+.modal-actions {
+	margin-top: 20px;
+}
+
+.confirm-btn, .cancel-btn {
+	padding: 10px 20px;
+	border: none;
+	border-radius: 8px;
+	font-size: 16px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.confirm-btn {
+	background-color: #28a745;
+	color: #ffffff;
+}
+
+.confirm-btn:hover {
+	background-color: #218838;
+}
+
+.cancel-btn {
+	background-color: #dc3545;
+	color: #ffffff;
+	margin-left: 10px;
+}
+
+.cancel-btn:hover {
+	background-color: #c82333;
+}
+
+/* Smooth fade-in animation */
+@
+keyframes fadeIn {from { opacity:0;
+	transform: scale(0.9);
+}
+
+to {
+	opacity: 1;
+	transform: scale(1);
+}
+
+}
 .order-info {
 	display: flex; /* Kích hoạt Flexbox */
 	justify-content: space-between;

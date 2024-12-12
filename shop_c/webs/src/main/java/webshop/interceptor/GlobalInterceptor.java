@@ -1,4 +1,4 @@
-package webshop.controller;
+package webshop.interceptor;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -14,6 +14,7 @@ public class GlobalInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {	
+    	System.out.println("Cái địt mẹ nó chứ!!!");
     	return true;
     }
 

@@ -253,8 +253,7 @@ public class PaymentController {
 			orderDetail.setUnitPrice(cart.getTotalPrice() / cart.getQuantity());
 			orderDetail.setProductDetail(productDetail);
 
-			cart.setStatus(1);
-			cartDAO.updateCart(cart);
+			cartDAO.deleteCart(cart.getID());
 
 			orderDetails.add(orderDetail);
 			totalProductFee += cart.getTotalPrice();
@@ -430,8 +429,7 @@ public class PaymentController {
 					orderDetail.setUnitPrice(cart.getTotalPrice() / cart.getQuantity());
 					orderDetail.setProductDetail(productDetail);
 
-					cart.setStatus(1);
-					cartDAO.updateCart(cart);
+					cartDAO.deleteCart(cart.getID());
 
 					orderDetails.add(orderDetail);
 				}
@@ -593,7 +591,7 @@ public class PaymentController {
 			return "redirect:/home.htm";
 		}
 		Order order = orderDAO.getOrderById(idOrder);
-		if (order == null || order.getOrderStatus().getId() != 1) {
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2 && order.getPaymentStatus() == 1)) {
 			return "redirect:/home.htm";
 		}
 		long totalAmount = (long) order.getTotal();
@@ -665,6 +663,8 @@ public class PaymentController {
 			if ("00".equals(vnp_TransactionStatus)) {
 				Date currentDate = new Date();
 				Order order = orderDAO.getOrderById(newOrderId);
+				order.setPaymentStatus(1);
+				order.setPaymentMethod(paymentMethodDAO.getPaymentMethodById(2));
 				order.setOrderStatus(orderStatusDAO.getOrderStatusById(2));
 				order.setUpdateTime(currentDate);
 				orderDAO.updateOrder(order);

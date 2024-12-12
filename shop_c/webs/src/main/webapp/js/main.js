@@ -1,6 +1,10 @@
 function addToCart() {
 
 	const selectedSize = document.querySelector('.sizebutton.selected'); // Lấy size đã chọn
+	const oldQuantityCartText = document.querySelector('#quantityCart').innerHTML.trim();
+	const oldQuantityCart = parseInt(oldQuantityCartText, 10) || 0;
+	const newQuantityCart = oldQuantityCart + 1;
+
 	if (!selectedSize) {
 		alert("Vui lòng chọn size trước khi thêm vào giỏ hàng!"); // Hiển thị cảnh báo nếu chưa chọn size
 		return;
@@ -21,6 +25,7 @@ function addToCart() {
 				alert('Sản phẩm đã có trong giỏ hàng!!!');
 			} else {
 				console.log('Thêm sản phẩm thành công: ', data);
+				document.querySelector('#quantityCart').innerHTML = newQuantityCart;
 				alert('Sản phẩm đã thêm vào giỏ hàng!!!');
 			}
 			// Bạn có thể thực hiện các thao tác khác như hiển thị thông báo

@@ -222,7 +222,7 @@
 										src="/b9e86569af7a8/3594363.png" alt=""
 										data-original-src="/b9e86569af7a8/3594363.png" data-color="">
 								</span> Thêm vào giỏ hàng
-								</a><a href="#"
+								</a><!-- <a href="#"
 									class="u-btn u-btn-round u-button-style u-radius u-block-control u-block-60d2-16"
 									style="transform: translateX(-72px); --radius: 20px; box-shadow: 0px 0px 8px 0px rgba(var(--grey-50-r), var(--grey-50-g), var(--grey-50-b), 1); margin-top: -59px; margin-right: 164px; margin-bottom: 0px; margin-left: auto; padding-top: 0px; padding-bottom: 0px; padding-left: 30px; padding-right: 30px"
 									data-block="27">​<span
@@ -231,7 +231,7 @@
 									data-block="28"><img src="/90a6a37694106/825575.png"
 										alt="" data-original-src="/90a6a37694106/825575.png"
 										data-color=""></span>&nbsp;Mua ngay​
-								</a>
+								</a> -->
 							</div>
 						</div>
 					</div>
