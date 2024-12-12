@@ -1,5 +1,6 @@
 package webshop.controller;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import webshop.dao.AccountDAO;
 import webshop.dao.CartDAO;
@@ -167,14 +170,119 @@ public class UserController {
 		return "user/personal";
 	}
 
-	@RequestMapping("resetpass")
-	public String resetpass(HttpServletRequest request, HttpSession ses) {
-		if (ses.getAttribute("user") == null) {
-			return "redirect:/login.htm";
-		}
+	@RequestMapping(value = "/updateProfile", method = RequestMethod.POST)
+	public String updateProfile(
+	    @RequestParam("name") String name,
+	    @RequestParam("phone") String phone,
+	    @RequestParam("email") String email,
+	    @RequestParam(value = "file", required = false) MultipartFile file,
+	    HttpSession session,
+	    HttpServletRequest request
+	) {
+	    // Kiểm tra người dùng đã đăng nhập
+	    String userEmail = (String) session.getAttribute("user");
+	    if (userEmail == null) {
+	        return "redirect:/login.htm";
+	    }
 
-		// tiếp tục đổi mk gì đó
-		return "login/resetpass";
+	    // Lấy tài khoản và khách hàng từ cơ sở dữ liệu
+	    Account acc = accd.getAccountByEmail(userEmail);
+	    if (acc == null) {
+	        request.setAttribute("errorMessage", "Không tìm thấy tài khoản.");
+	        return "user/personal";
+	    }
+
+	    Customer customer = cusd.getCustomerById(acc.getId());
+	    if (customer == null) {
+	        request.setAttribute("errorMessage", "Không tìm thấy thông tin khách hàng.");
+	        return "user/personal";
+	    }
+
+	    // Cập nhật thông tin
+	    customer.setName(name);
+	    customer.setPhone(phone);
+	    acc.setEmail(email);
+
+	    // Xử lý upload ảnh (nếu có)
+	    if (file != null && !file.isEmpty()) {
+	        try {
+	            String fileName = file.getOriginalFilename();
+	            String uploadDir = request.getServletContext().getRealPath("/images/avatar/");
+	            File uploadFile = new File(uploadDir, fileName);
+	            file.transferTo(uploadFile);
+
+	            // Cập nhật đường dẫn ảnh đại diện
+	            customer.setImage("images/avatar/" + fileName);
+	        } catch (Exception e) {
+	            request.setAttribute("errorMessage", "Lỗi khi upload ảnh: " + e.getMessage());
+	            return "user/personal";
+	        }
+	    }
+
+	    // Lưu vào cơ sở dữ liệu
+	    cusd.updateCustomer(customer);
+	    accd.updateAccount(acc);
+
+	    // Gửi thông báo thành công
+	    request.setAttribute("successMessage", "Cập nhật thông tin thành công!");
+	    return "redirect:/personal";
+	}
+	
+	@RequestMapping(value = "resetpass", method = RequestMethod.POST)
+	public String changePassword(
+	        @RequestParam("currentPassword") String currentPassword,
+	        @RequestParam("newPassword") String newPassword,
+	        @RequestParam("confirmPassword") String confirmPassword,
+	        HttpSession session,
+	        ModelMap model) {
+	    // Kiểm tra người dùng đã đăng nhập
+	    String userEmail = (String) session.getAttribute("user");
+	    if (userEmail == null) {
+	        return "redirect:/login.htm"; // Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
+	    }
+
+	    // Lấy thông tin tài khoản từ cơ sở dữ liệu
+	    Account acc = accd.getAccountByEmail(userEmail);
+	    if (acc == null) {
+	        model.addAttribute("errorMessage", "Tài khoản không tồn tại.");
+	        return "login/resetpass";
+	    }
+
+	    // Kiểm tra mật khẩu cũ
+	    if (!currentPassword.equals(acc.getPassword())) { // Nếu cần, thêm mã hóa bcrypt để so sánh
+	        model.addAttribute("errorMessage", "Mật khẩu cũ không đúng.");
+	        return "login/resetpass";
+	    }
+
+	    // Kiểm tra mật khẩu mới và xác nhận mật khẩu
+	    if (!newPassword.equals(confirmPassword)) {
+	        model.addAttribute("errorMessage", "Mật khẩu xác nhận không khớp.");
+	        return "login/resetpass";
+	    }
+
+	    // Cập nhật mật khẩu mới
+	    acc.setPassword(newPassword); // Nếu cần, mã hóa mật khẩu bằng bcrypt trước khi lưu
+	    boolean isUpdated = accd.updateAccount(acc);
+
+	    if (isUpdated) {
+	        model.addAttribute("successMessage", "Đổi mật khẩu thành công!");
+	    } else {
+	        model.addAttribute("errorMessage", "Có lỗi xảy ra khi đổi mật khẩu.");
+	    }
+
+	    // Quay lại trang đổi mật khẩu với thông báo
+	    return "login/resetpass";
+	}
+
+
+	@RequestMapping(value = "resetpass", method = RequestMethod.GET)
+	public String showResetPasswordForm(HttpSession session) {
+	    if (session.getAttribute("user") == null) {
+	        return "redirect:/login.htm"; // Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
+	    }
+	    return "login/resetpass";
 	}
 
 }
+
+

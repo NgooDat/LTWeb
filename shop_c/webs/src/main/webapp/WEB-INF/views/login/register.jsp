@@ -1,72 +1,66 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
 <!DOCTYPE html>
 <html style="font-size: 16px;">
 
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta charset="utf-8">
-        <meta name="keywords" content="Đăng nhập​">
-        <meta name="description" content="">
-        <title>Đăng nhập</title>
-        <link rel="stylesheet" href="css/page.css" media="screen">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="Đăng ký​">
+    <meta name="description" content="">
+    <title>Đăng ký</title>
+    <link rel="stylesheet" href="css/page.css" media="screen">
 
-        <meta name="generator" content="Nicepage 7.0.3, nicepage.com">
-    </head>
+    <meta name="generator" content="Nicepage 7.0.3, nicepage.com">
+</head>
 
-    <body class="u-body u-xl-mode" data-style="login-template-1" data-posts=""
-          data-global-section-properties="{&quot;code&quot;:&quot;LOGIN&quot;,&quot;colorings&quot;:{&quot;light&quot;:[&quot;clean&quot;,&quot;clean&quot;],&quot;colored&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;],&quot;dark&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;]},&quot;isPreset&quot;:true}"
-          data-source="fix" data-lang="en"
-          data-page-sections-style="[{&quot;name&quot;:&quot;login-form-1&quot;,&quot;margin&quot;:&quot;both&quot;,&quot;repeat&quot;:false}]"
-          data-page-coloring-types="{&quot;light&quot;:[&quot;clean&quot;,&quot;clean&quot;],&quot;colored&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;],&quot;dark&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;]}"
-          data-page-category="&quot;Login&quot;">
-        <section class="u-clearfix u-grey-10 u-block-b62f-1" custom-posts-hash="[]" data-style="blank"
-                 data-section-properties="{&quot;margin&quot;:&quot;none&quot;,&quot;stretch&quot;:true}" id="carousel_5973"
-                 data-source="functional_fix" data-id="b62f">
-            <div class="u-clearfix u-sheet u-valign-middle u-block-b62f-2">
-                <div
-                    class="u-align-center u-border-20 u-border-no-bottom u-border-no-left u-border-no-top u-border-palette-1-base u-container-align-center u-container-style u-custom-border u-expanded-width-md u-expanded-width-sm u-expanded-width-xs u-group u-radius u-shape-round u-white u-block-b62f-3">
-                    <div class="u-container-layout u-valign-middle-xs u-valign-top-lg u-valign-top-xl u-block-b62f-4">
-                        <h2 class="u-text u-text-default u-text-palette-1-base u-block-b62f-5">Đăng nhập
-                        <p class = "message" >${message}</p>
-                        ​</h2>
-                        
-                        <div class="u-expanded-width-xs u-form u-login-control u-block-b62f-6">
-                            <form action="login-auth.htm" method="POST"
-                                  class="u-clearfix u-form-custom-backend u-form-spacing-10 u-form-vertical u-inner-form" source="custom"
-                                  name="form" style="padding: 16px;" data-services="">
-                                <div class="u-form-group u-form-name u-block-b62f-7">
-                                    <label for="username-a30d" class="u-label u-text-grey-25 u-block-b62f-8">Tên đăng nhập</label>
-                                    <input type="text" placeholder="Nhập tên đăng nhập" id="username-a30d" name="username"
-                                           class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-9" >
-                                </div>
-                                <div class="u-form-group u-form-password u-block-b62f-10">
-                                    <label for="password-a30d" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu</label>
-                                    <input type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="password"
-                                           class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12" >
-                                </div>
-                                <div class="u-form-checkbox u-form-group u-block-b62f-13">
-                                    <input type="checkbox" id="checkbox-a30d" name="remember" value="On" class="u-field-input">
-                                    <label for="checkbox-a30d" class="u-block-b62f-14 u-field-label u-text-grey-25"
-                                           style="text-transform: uppercase; font-size: 0.875rem; letter-spacing: 0px">Lưu mật khẩu</label>
-                                </div>
-                                <div class="u-align-left u-form-group u-form-submit u-block-b62f-15">
-                                    <button  class="u-btn u-btn-round u-btn-submit u-button-style u-radius u-block-b62f-16">Đăng nhập</button>
-                                    <input type="submit" value="submit" class="u-form-control-hidden">
-                                </div>
-                                <input type="hidden" value="" name="recaptchaResponse">
+<body class="u-body u-xl-mode" data-style="login-template-1">
+    <section class="u-clearfix u-grey-10 u-block-b62f-1" data-style="blank" id="carousel_5973">
+        <div class="u-clearfix u-sheet u-valign-middle u-block-b62f-2">
+            <div
+                class="u-align-center u-border-20 u-border-no-bottom u-border-no-left u-border-no-top u-border-palette-1-base u-container-align-center u-container-style u-custom-border u-expanded-width-md u-expanded-width-sm u-expanded-width-xs u-group u-radius u-shape-round u-white u-block-b62f-3">
+                <div class="u-container-layout u-valign-middle-xs u-valign-top-lg u-valign-top-xl u-block-b62f-4">
+                    <h2 class="u-text u-text-default u-text-palette-1-base u-block-b62f-5">Đăng ký tài khoản</h2>
 
+                    <c:if test="${not empty message}">
+                        <p class="message">${message}</p>
+                    </c:if>
 
-                            </form>
-                        </div><a href="#"
-                                 class="u-border-1 u-border-active-palette-1-base u-border-hover-palette-1-base u-btn u-button-style u-login-control u-login-forgot-password u-none u-text-palette-1-base u-block-b62f-17">Quên
-                            mật khẩu?​</a><a href="register.htm"
-                                         class="u-border-1 u-border-active-palette-1-base u-border-hover-palette-1-base u-btn u-button-style u-login-control u-login-create-account u-none u-text-palette-1-base u-block-b62f-18">Bạn
-                            chưa có tài khoản?​</a>
+                    <div class="u-expanded-width-xs u-form u-login-control u-block-b62f-6">
+                        <form action="register.htm" method="POST"
+                            class="u-clearfix u-form-custom-backend u-form-spacing-10 u-form-vertical u-inner-form">
+                            <div class="u-form-group u-block-b62f-7">
+                                <label for="email" class="u-label u-text-grey-25 u-block-b62f-8">Email</label>
+                                <input type="email" placeholder="Nhập email" id="email" name="email"
+                                    class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-9"
+                                    required>
+                            </div>
+                            <div class="u-form-group u-block-b62f-10">
+                                <label for="password" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu</label>
+                                <input type="password" placeholder="Nhập mật khẩu" id="password" name="password"
+                                    class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12"
+                                    required>
+                            </div>
+                            <div class="u-form-group u-block-b62f-10">
+                                <label for="confirmPassword" class="u-label u-text-grey-25 u-block-b62f-11">Nhập lại
+                                    mật khẩu</label>
+                                <input type="password" placeholder="Nhập lại mật khẩu" id="confirmPassword"
+                                    name="confirmPassword"
+                                    class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12"
+                                    required>
+                            </div>
+                            <div class="u-align-left u-form-group u-form-submit u-block-b62f-15">
+                                <button
+                                    class="u-btn u-btn-round u-btn-submit u-button-style u-radius u-block-b62f-16">Đăng
+                                    ký</button>
+                            </div>
+                        </form>
                     </div>
-                </div>
+             </div>
             </div>
-            <style data-mode="XL">
+        </div>
+         <style data-mode="XL">
             
             		.message{
             		
@@ -99,13 +93,34 @@
                     .u-block-b62f-2 {
                         min-height: 750px;
                     }
+					/* Tăng khoảng cách giữa các trường nhập liệu và nút đăng ký */
+.u-align-left.u-form-group.u-form-submit {
+    margin-top: 20px; /* Thêm khoảng cách trên nút đăng ký */
+}
 
+/* Cải thiện kích thước và căn chỉnh nút đăng ký */
+button.u-btn.u-btn-round.u-btn-submit.u-button-style {
+    width: 100%; /* Đảm bảo nút có chiều rộng đầy đủ */
+    padding: 15px; /* Thêm padding cho nút để nó dễ bấm hơn */
+    font-size: 16px; /* Tăng kích thước chữ trên nút */
+    border-radius: 10px; /* Đảm bảo nút có viền bo tròn */
+    text-align: center; /* Căn giữa văn bản trên nút */
+    background-color: #4CAF50; /* Tăng độ tương phản cho nút */
+    color: white; /* Đảm bảo chữ trên nút có màu trắng */
+    border: none; /* Xóa bỏ viền của nút */
+}
+
+/* Thêm một chút hiệu ứng hover cho nút */
+button.u-btn.u-btn-round.u-btn-submit.u-button-style:hover {
+    background-color: #45a049; /* Khi hover, nút sẽ có màu hơi tối lại */
+    cursor: pointer; /* Thay đổi con trỏ khi hover */
+}
                     .u-block-b62f-3 {
                         width: 800px;
                         min-height: 535px;
                         --radius: 20px;
                         margin-top: 60px;
-                        margin-bottom: 60px;
+                        margin-bottom: 40px;
                         margin-left: auto;
                         margin-right: auto;
                     }
@@ -591,5 +606,7 @@
             </style>
         </section>
     </body>
+
+
 
 </html>
