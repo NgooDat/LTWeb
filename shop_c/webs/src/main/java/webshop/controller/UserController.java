@@ -38,6 +38,9 @@ import webshop.entity.ProductDetail;
 
 @Controller
 public class UserController {
+	
+	private String adrule = "1";
+	private String emrule  = "2";
 
 	@Autowired
 	AccountDAO accd;
@@ -60,10 +63,10 @@ public class UserController {
 	public String home(ModelMap model, HttpSession ses) {
 		
 		if(ses.getAttribute("rules")!=null) {
-			if(((String)ses.getAttribute("rules")).equals("1")) {
+			if(((String)ses.getAttribute("rules")).equals(adrule)) {
 				return "redirect:adhome.htm";
 				
-			}else if(((String)ses.getAttribute("rules")).equals("2")){
+			}else if(((String)ses.getAttribute("rules")).equals(emrule)){
 				return "redirect:emhome.htm";
 			}
 		}
