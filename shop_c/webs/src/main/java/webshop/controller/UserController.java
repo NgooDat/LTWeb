@@ -41,6 +41,7 @@ public class UserController {
 	
 	private String adrule = "1";
 	private String emrule  = "2";
+	private String userrule = "3";
 
 	@Autowired
 	AccountDAO accd;
@@ -95,6 +96,7 @@ public class UserController {
 
 	@RequestMapping("search")
 	public String search(@RequestParam(value = "search", required = false) String search, ModelMap model) {
+		
 
 		List<Product> dsProduct = product.getAllProducts(); // Lấy tất cả sản phẩm
 		List<ProductDetail> dsDetail = prdd.getAllProductDetails(); // Lấy chi tiết sản phẩm

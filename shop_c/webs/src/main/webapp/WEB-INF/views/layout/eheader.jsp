@@ -52,7 +52,7 @@
                                     <div class="back-list2"></div>
                                     <ul class="account-list u-align-right u-nav u-popupmenu-items u-text-hover-palette-1-base u-unstyled u-nav-2">
                                         <li class="item-menu u-nav-item"><a href="emproduct.htm" class="u-button-style u-nav-link">Quản lý sản phẩm</a></li>
-                                        <li class="item-menu u-nav-item"><a href="feedback.htm" class="u-button-style u-nav-link">Quản lý nhãn hiệu</a></li>
+                                        <li class="item-menu u-nav-item"><a href="emprodattribute.htm" class="u-button-style u-nav-link">Quản lý nhãn hiệu</a></li>
                                         <li class="item-menu u-nav-item"><a href="emproduct.htm" class="u-button-style u-nav-link">Quản lý đơn hàng</a></li>
                                     </ul>
                                 </li>

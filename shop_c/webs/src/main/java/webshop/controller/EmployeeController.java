@@ -118,23 +118,7 @@ public class EmployeeController {
 		return "employee/qlproduct";
 	}
     
-    
-    @RequestMapping("feedback")
-	public String feedback(ModelMap model) {
-
-    	List<Type> dsType = type.getAllTypes();
-    	List<Origin> dsOrigins = origin.getAllOrigins();
-    	List<Brand> dsBrand = brand.getAllBrands();
-    	List<Material> dsMaterials = material.getAllMaterials();
-    	
-    	model.addAttribute("types", dsType);
-    	model.addAttribute("origins", dsOrigins);
-    	model.addAttribute("brands", dsBrand);
-    	model.addAttribute("materials", dsMaterials);
-		
-
-		return "employee/feedback";
-	}
+   
     
     @RequestMapping("empersonal")
 	public String personal(HttpServletRequest request, HttpSession session) {
@@ -525,9 +509,119 @@ public class EmployeeController {
         }
         
     }
+    
+    //thao tác với đặt tính của sản phẩm
+    @RequestMapping("emprodattribute")
+    public String prodAttributeG(ModelMap model) {
+    	List<Type> dsType = type.getAllTypes();
+    	List<Origin> dsOrigins = origin.getAllOrigins();
+    	List<Brand> dsBrand = brand.getAllBrands();
+    	List<Material> dsMaterials = material.getAllMaterials();
+    	
+    	model.addAttribute("types", dsType);
+    	model.addAttribute("origins", dsOrigins);
+    	model.addAttribute("brands", dsBrand);
+    	model.addAttribute("materials", dsMaterials);
+    	return "employee/proAttributes";
+    }
+    
+    @RequestMapping(value = "emprodattribute", method = RequestMethod.POST)
+    public String prodAttributeP(
+            @RequestParam(value = "id", required = false) Integer id,
+            @RequestParam("name") String name,
+            @RequestParam("action") String action,
+            @RequestParam("type") String tp) {
+    	
+    	String move = "";
+
+        try {
+            if ("category".equals(tp)) { // Xử lý loại sản phẩm
+                if ("add".equals(action) && name != null) {
+                	Type category = new Type();
+                    category.setName(name);
+                    type.addType(category);
+                } else if ("update".equals(action) && id != null && name != null) {
+                	Type category = type.getTypeById(id);
+                    if (category != null) {
+                        category.setName(name);
+                        type.updateType(category);
+                    }
+                } else if ("delete".equals(action) && id != null) {
+                    type.deleteType(id);
+                }
+                move = "class1";
+            }
+            if ("material".equals(tp)) { // Xử lý chất liệu sản phẩm
+                if ("add".equals(action) && name != null) {
+                    Material mt = new Material();
+                    mt.setName(name);
+                    material.addMaterial(mt);
+                } else if ("update".equals(action) && id != null && name != null) {
+                    Material mt = material.getMaterialById(id);
+                    if (mt != null) {
+                        mt.setName(name);
+                        material.updateMaterial(mt);
+                    }
+                } else if ("delete".equals(action) && id != null) {
+                    material.deleteMaterial(id);
+                }
+                move = "class2";
+            }
+            if ("origin".equals(tp)) { // Xử lý xuất xứ sản phẩm
+                if ("add".equals(action) && name != null) {
+                    Origin og = new Origin();
+                    og.setName(name);
+                    origin.addOrigin(og);
+                } else if ("update".equals(action) && id != null && name != null) {
+                    Origin og = origin.getOriginById(id);
+                    if (og != null) {
+                        og.setName(name);
+                        origin.updateOrigin(og);
+                    }
+                } else if ("delete".equals(action) && id != null) {
+                    origin.deleteOrigin(id);
+                }
+                move = "class3";
+            }
+            if ("brand".equals(tp)) { // Xử lý thương hiệu sản phẩm
+                if ("add".equals(action) && name != null) {
+                    Brand br = new Brand();
+                    br.setName(name);
+                    brand.addBrand(br);
+                } else if ("update".equals(action) && id != null && name != null) {
+                    Brand br = brand.getBrandById(id);
+                    if (br != null) {
+                        br.setName(name);
+                        brand.updateBrand(br);
+                    }
+                } else if ("delete".equals(action) && id != null) {
+                    brand.deleteBrand(id);
+                }
+                move = "class4";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "redirect:emprodattribute.htm#"+move; 
+    }
 
 
-
-
+    
+//    @RequestMapping("feedback")
+//	public String feedback(ModelMap model) {
+//
+//    	List<Type> dsType = type.getAllTypes();
+//    	List<Origin> dsOrigins = origin.getAllOrigins();
+//    	List<Brand> dsBrand = brand.getAllBrands();
+//    	List<Material> dsMaterials = material.getAllMaterials();
+//    	
+//    	model.addAttribute("types", dsType);
+//    	model.addAttribute("origins", dsOrigins);
+//    	model.addAttribute("brands", dsBrand);
+//    	model.addAttribute("materials", dsMaterials);
+//		
+//
+//		return "employee/feedback";
+//	}
 
 }
