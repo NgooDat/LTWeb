@@ -57,7 +57,18 @@ public class UserController {
 	OrderStatusDAO osd;
 
 	@RequestMapping("home")
-	public String home(ModelMap model) {
+	public String home(ModelMap model, HttpSession ses) {
+		
+		if(ses.getAttribute("rules")!=null) {
+			if(((String)ses.getAttribute("rules")).equals("1")) {
+				return "redirect:adhome.htm";
+				
+			}else if(((String)ses.getAttribute("rules")).equals("2")){
+				return "redirect:emhome.htm";
+			}
+		}
+		
+		
 
 		List<Product> dsProduct = product.getAllProducts();
 
@@ -73,6 +84,7 @@ public class UserController {
 			productInfoList.add(new Object[] { p.getId(), p.getName(), minPrice, p.getImage() });
 		}
 
+		model.addAttribute("message", "Sản phẩm nổi bật");
 		model.addAttribute("productInfo", productInfoList);
 
 		return "user/home";
@@ -102,6 +114,7 @@ public class UserController {
 		}
 
 		// Gắn danh sách vào Model
+		model.addAttribute("message", "Sản phẩm cần tìm");
 		model.addAttribute("productInfo", productInfoList);
 
 		return "user/home";

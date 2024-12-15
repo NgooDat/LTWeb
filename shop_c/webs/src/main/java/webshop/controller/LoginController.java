@@ -47,6 +47,7 @@ public class LoginController {
 		if (account.isPresent()) {
 
 			Account acc = accountDAO.getAccountByEmail(username);
+			session.setAttribute("rules", Integer.toString(acc.getRule().getId()));
 			Customer customer = customerDAO.getCustomerById(acc.getId());
 			int rules = acc.getRule().getId();
 			// phân quyền các kiểu
