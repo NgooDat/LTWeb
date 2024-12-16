@@ -40,6 +40,8 @@ import webshop.entity.Account;
 import webshop.entity.Brand;
 import webshop.entity.Customer;
 import webshop.entity.Type;
+import webshop.security.JwtUtil;
+import webshop.security.Roles;
 import webshop.entity.Origin;
 import webshop.entity.Material;
 import webshop.entity.Size;
@@ -51,9 +53,7 @@ import webshop.entity.Product;
 
 @Controller
 public class EmployeeController {
-	
-	private String adrule = "1";
-	private String userrule  = "3";
+
     
     @Autowired
     BrandDAO brand;
@@ -83,14 +83,19 @@ public class EmployeeController {
     @RequestMapping("emhome")
 	public String homee(ModelMap model, HttpSession ses) {
     	
-    	if(ses.getAttribute("rules")!=null) {
-			if(((String)ses.getAttribute("rules")).equals(adrule)) {
-				return "redirect:adhome.htm";
-				
-			}else if(((String)ses.getAttribute("rules")).equals(userrule)){
-				return "redirect:home.htm";
-			}
-		}
+//    	if (ses == null || ses.getAttribute("jwtToken") == null) {
+//            return "redirect:home.htm";
+//        }
+//    	String token = (String) ses.getAttribute("jwtToken");
+//    	if (JwtUtil.validateToken(token) == false) {
+//            return "redirect:home.htm";
+//        }
+//    	if(((String)ses.getAttribute("role")).equals(Roles.getUser())) {
+//			return "redirect:home.htm";
+//			
+//		}else if(((String)ses.getAttribute("role")).equals(Roles.getAdmin())){
+//			return "redirect:adhome.htm";
+//		}
 
 		return "employee/home";
 	}

@@ -17,6 +17,8 @@ import webshop.entity.Account;
 import webshop.entity.Cart;
 import webshop.entity.Customer;
 import webshop.entity.Rule;
+import webshop.security.JwtUtil;
+import webshop.security.Roles;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -47,12 +49,19 @@ public class LoginController {
 		if (account.isPresent()) {
 
 			Account acc = accountDAO.getAccountByEmail(username);
-			session.setAttribute("rules", Integer.toString(acc.getRule().getId()));
 			Customer customer = customerDAO.getCustomerById(acc.getId());
 			int rules = acc.getRule().getId();
 			// phân quyền các kiểu
 			// sau này có Mã hóa sau session + pass
+			
+			
+			//Lưu vào session bằng JWT
+			String token = JwtUtil.generateToken(username);
+			session.setAttribute("jwtToken", token);
 			session.setAttribute("user", username);
+			session.setAttribute("role", acc.getRule().getName());
+			
+			
 			List<Cart> carts = (List<Cart>) session.getAttribute("carts");
 			List<Cart> customerCarts = cartDAO.getCartsByCustomerId(customer.getId());
 
