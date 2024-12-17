@@ -1,8 +1,12 @@
 package webshop.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+
+import webshop.controller.MailerController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,9 +18,13 @@ import webshop.dao.CustomerDAO;
 import webshop.dao.RuleDAO;
 import webshop.dao.UploadFile;
 import webshop.entity.Account;
+import webshop.entity.Brand;
 import webshop.entity.Cart;
 import webshop.entity.Customer;
+import webshop.entity.Material;
+import webshop.entity.Origin;
 import webshop.entity.Rule;
+import webshop.entity.Type;
 import webshop.security.JwtUtil;
 import webshop.security.Roles;
 
@@ -29,6 +37,11 @@ import java.util.Optional;
 
 @Controller
 public class LoginController {
+	
+	@Autowired
+    private JavaMailSender mailSender;
+
+	
 	@Autowired
 	private AccountDAO accountDAO;
 	@Autowired
@@ -241,4 +254,70 @@ public class LoginController {
 		}
 		return "redirect:/login.htm";
 	}
+	
+	
+	@RequestMapping(value = "inputemail" )
+    public String inputEmail(ModelMap model, HttpServletRequest request, HttpSession session) {
+		
+		
+		return "login/inputmail";
+
+    }
+	
+	@RequestMapping(value = "inputcode", method = RequestMethod.POST)
+    public String inputCode(ModelMap model, HttpServletRequest request, HttpSession session) {
+		String mail = request.getParameter("mail");
+		session.setAttribute("mail", mail);
+		
+		//Kiểm tra mail có tồn tại
+		
+		
+		//List<Account> acc = accountDAO.get
+		
+		//Gửi code
+		String code = MailerController.getCode();
+		session.setAttribute("code", code);
+		code = code + " là mã khôi phục tài khoản webshop của bạn!";
+		
+		String send = new MailerController().sendCode(mailSender, mail, code, code);
+		return "login/inputcode";
+
+    }
+	
+	
+	@RequestMapping(value = "authcode", method = RequestMethod.POST)
+    public String authcode(ModelMap model, HttpServletRequest request, HttpSession session) {
+		String code = request.getParameter("code");
+		
+		String send = (String)session.getAttribute("code");
+		
+		if(code.equals(send)) {
+			return "login/newpass";
+		}
+		
+		return "login/inputcode";
+
+    }
+	
+	
+	@RequestMapping(value = "newpass", method = RequestMethod.POST)
+    public String newpass(ModelMap model, HttpServletRequest request, HttpSession session) {
+		String pass = request.getParameter("password");
+		String repass = request.getParameter("repass");
+		
+		if(!pass.equals(repass)) {
+			
+		}else {
+			//
+			String email = (String) session.getAttribute("mail");
+			Account account = accountDAO.getAccountByEmail(email);
+			account.setPassword(pass);
+			accountDAO.updateAccount(account);
+		}
+		
+		
+		
+		return "redirect:login.htm";
+
+    }
 }

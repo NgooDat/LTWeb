@@ -32,35 +32,24 @@
                         ​</h2>
                         
                         <div class="u-expanded-width-xs u-form u-login-control u-block-b62f-6">
-                            <form action="login-auth.htm" method="POST"
+                            <form action="authcode.htm" method="POST"
                                   class="u-clearfix u-form-custom-backend u-form-spacing-10 u-form-vertical u-inner-form" source="custom"
                                   name="form" style="padding: 16px;" data-services="">
                                 <div class="u-form-group u-form-name u-block-b62f-7">
-                                    <label for="username-a30d" class="u-label u-text-grey-25 u-block-b62f-8">Tên đăng nhập</label>
-                                    <input type="text" placeholder="Nhập tên đăng nhập" id="username-a30d" name="username"
+                                    <label for="username-a30d" class="u-label u-text-grey-25 u-block-b62f-8">Nhập mã code gồm 8 chữ số được gửi qua mail</label>
+                                    <input type="text" placeholder="Nhập code" id="username-a30d" name="code"
                                            class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-9" >
                                 </div>
-                                <div class="u-form-group u-form-password u-block-b62f-10">
-                                    <label for="password-a30d" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu</label>
-                                    <input type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="password"
-                                           class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12" >
-                                </div>
-                                <div class="u-form-checkbox u-form-group u-block-b62f-13">
-                                    <input type="checkbox" id="checkbox-a30d" name="remember" value="On" class="u-field-input">
-                                    <label for="checkbox-a30d" class="u-block-b62f-14 u-field-label u-text-grey-25"
-                                           style="text-transform: uppercase; font-size: 0.875rem; letter-spacing: 0px">Lưu mật khẩu</label>
-                                </div>
+
                                 <div class="u-align-left u-form-group u-form-submit u-block-b62f-15">
-                                    <button  class="u-btn u-btn-round u-btn-submit u-button-style u-radius u-block-b62f-16">Đăng nhập</button>
+                                    <button  class="u-btn u-btn-round u-btn-submit u-button-style u-radius u-block-b62f-16">Xác nhận</button>
                                     <input type="submit" value="submit" class="u-form-control-hidden">
                                 </div>
                                 <input type="hidden" value="" name="recaptchaResponse">
 
 
                             </form>
-                        </div><a href="inputemail.htm"
-                                 class="u-border-1 u-border-active-palette-1-base u-border-hover-palette-1-base u-btn u-button-style u-login-control u-login-forgot-password u-none u-text-palette-1-base u-block-b62f-17">Quên
-                            mật khẩu?​</a><a href="register.htm"
+                        </div><a href="register.htm"
                                          class="u-border-1 u-border-active-palette-1-base u-border-hover-palette-1-base u-btn u-button-style u-login-control u-login-create-account u-none u-text-palette-1-base u-block-b62f-18">Bạn
                             chưa có tài khoản?​</a>
                     </div>

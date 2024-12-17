@@ -27,31 +27,27 @@
                 <div
                     class="u-align-center u-border-20 u-border-no-bottom u-border-no-left u-border-no-top u-border-palette-1-base u-container-align-center u-container-style u-custom-border u-expanded-width-md u-expanded-width-sm u-expanded-width-xs u-group u-radius u-shape-round u-white u-block-b62f-3">
                     <div class="u-container-layout u-valign-middle-xs u-valign-top-lg u-valign-top-xl u-block-b62f-4">
-                        <h2 class="u-text u-text-default u-text-palette-1-base u-block-b62f-5">Đăng nhập
+                        <h2 class="u-text u-text-default u-text-palette-1-base u-block-b62f-5">Đổi mật khẩu
                         <p class = "message" >${message}</p>
                         ​</h2>
                         
                         <div class="u-expanded-width-xs u-form u-login-control u-block-b62f-6">
-                            <form action="login-auth.htm" method="POST"
+                            <form action="newpass.htm" method="POST"
                                   class="u-clearfix u-form-custom-backend u-form-spacing-10 u-form-vertical u-inner-form" source="custom"
                                   name="form" style="padding: 16px;" data-services="">
-                                <div class="u-form-group u-form-name u-block-b62f-7">
-                                    <label for="username-a30d" class="u-label u-text-grey-25 u-block-b62f-8">Tên đăng nhập</label>
-                                    <input type="text" placeholder="Nhập tên đăng nhập" id="username-a30d" name="username"
-                                           class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-9" >
-                                </div>
+
                                 <div class="u-form-group u-form-password u-block-b62f-10">
                                     <label for="password-a30d" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu</label>
                                     <input type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="password"
                                            class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12" >
                                 </div>
-                                <div class="u-form-checkbox u-form-group u-block-b62f-13">
-                                    <input type="checkbox" id="checkbox-a30d" name="remember" value="On" class="u-field-input">
-                                    <label for="checkbox-a30d" class="u-block-b62f-14 u-field-label u-text-grey-25"
-                                           style="text-transform: uppercase; font-size: 0.875rem; letter-spacing: 0px">Lưu mật khẩu</label>
+                                <div class="u-form-group u-form-password u-block-b62f-10">
+                                    <label for="password-a30d" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu</label>
+                                    <input type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="repass"
+                                           class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12" >
                                 </div>
                                 <div class="u-align-left u-form-group u-form-submit u-block-b62f-15">
-                                    <button  class="u-btn u-btn-round u-btn-submit u-button-style u-radius u-block-b62f-16">Đăng nhập</button>
+                                    <button  class="u-btn u-btn-round u-btn-submit u-button-style u-radius u-block-b62f-16">Xác nhận</button>
                                     <input type="submit" value="submit" class="u-form-control-hidden">
                                 </div>
                                 <input type="hidden" value="" name="recaptchaResponse">
