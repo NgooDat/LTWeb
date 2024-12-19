@@ -88,7 +88,9 @@ public class EmployeeController {
     @RequestMapping("emhome")
 	public String homee(HttpServletRequest request, HttpServletResponse response) throws IOException {
     	
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
 
 		return "employee/home";
 	}
@@ -96,7 +98,10 @@ public class EmployeeController {
     
     @RequestMapping("emproduct")
 	public String emproduct(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
-    	Authentication.employAuthen(request, response);
+    	
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
 
 		List<Product> dsProduct = product.getAllProducts();
 
@@ -122,7 +127,9 @@ public class EmployeeController {
     
     @RequestMapping("empersonal")
 	public String personal(HttpServletRequest request, HttpSession session,  HttpServletResponse response) throws IOException {
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
 
 
 		String email = (String) session.getAttribute("user");
@@ -147,7 +154,9 @@ public class EmployeeController {
     @RequestMapping(value = "emsearch", method = RequestMethod.POST)
 	public String search(@RequestParam(value = "emsearch", required = false) String search, ModelMap model,  
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
 
 		List<Product> dsProduct = product.getAllProducts(); // Lấy tất cả sản phẩm
 		List<ProductDetail> dsDetail = prdd.getAllProductDetails(); // Lấy chi tiết sản phẩm
@@ -179,7 +188,9 @@ public class EmployeeController {
 
     @RequestMapping("emaddproduct")
     public String home(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
     	System.out.println("Thêm sản phẩm thành công: với GET ");
         // Lấy các thông tin về loại sản phẩm, xuất xứ, thương hiệu và chất liệu
         List<Type> dsTypes = type.getAllTypes(); // Lấy tất cả loại sản phẩm
@@ -210,7 +221,9 @@ public class EmployeeController {
     		@RequestParam(value = "file", required = false) MultipartFile file
     		) throws IOException {
     	
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
     	
         System.out.println("Thêm sản phẩm thành công: với POST ");
 
@@ -289,7 +302,9 @@ public class EmployeeController {
     
     @RequestMapping("updateprod")
     public String update(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
     	System.out.println("Thêm sản phẩm thành công: với GET ");
         // Lấy các thông tin về loại sản phẩm, xuất xứ, thương hiệu và chất liệu
         List<Type> dsTypes = type.getAllTypes(); // Lấy tất cả loại sản phẩm
@@ -324,7 +339,9 @@ public class EmployeeController {
     public String updateProduct(HttpServletRequest request, Model model, HttpServletResponse response,
             @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
     	
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
 
         System.out.println("Cập nhật sản phẩm với POST");
 
@@ -400,7 +417,9 @@ public class EmployeeController {
     @RequestMapping("emproductinfo")
 	public String productinfo(HttpServletRequest request, HttpServletResponse response) throws IOException {
     	
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
 
 		if (request.getParameter("proid") == null) {
 			return "redirect:/home.htm";
@@ -428,7 +447,9 @@ public class EmployeeController {
     @RequestMapping("emaddproductdetail")
     public String home_addPrD(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
     	
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
         // Lấy danh sách sản phẩm
     	String id = request.getParameter("productid");
     	int idd = Integer.parseInt(id);
@@ -448,7 +469,9 @@ public class EmployeeController {
     @RequestMapping("emdelprod")
     public String delprod(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
     	
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
         // Lấy danh sách sản phẩm
     	String id = request.getParameter("productid");
     	int idd = Integer.parseInt(id);
@@ -472,7 +495,9 @@ public class EmployeeController {
     public String addProductDetail(HttpServletRequest request, Model model, 
     		RedirectAttributes redirectAttributes, HttpServletResponse response) throws IOException {
     	
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
     	int productId = Integer.parseInt(request.getParameter("productID"));
     	int price=Integer.parseInt(request.getParameter("price"));
     	int quantity= Integer.parseInt(request.getParameter("quantity"));
@@ -529,7 +554,9 @@ public class EmployeeController {
     @RequestMapping("emprodattribute")
     public String prodAttributeG(HttpServletRequest request, ModelMap model, HttpServletResponse response) throws IOException {
     	
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
     	List<Type> dsType = type.getAllTypes();
     	List<Origin> dsOrigins = origin.getAllOrigins();
     	List<Brand> dsBrand = brand.getAllBrands();
@@ -551,7 +578,9 @@ public class EmployeeController {
             HttpServletResponse response,
             @RequestParam("type") String tp) throws IOException {
     	
-    	Authentication.employAuthen(request, response);
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=2) return "redirect:home.htm";
     	
     	String move = "";
 

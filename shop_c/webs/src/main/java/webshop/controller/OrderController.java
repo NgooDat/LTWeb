@@ -72,7 +72,8 @@ public class OrderController {
 	public String order(HttpSession session, ModelMap model,
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		Authentication.userAuthen(request, response);
+		int auth = Authentication.redirectAuthen(request, response);
+		if(auth != 3 ) return "redirect:home.htm";
 
 		String email = (String) session.getAttribute("user");
 		Account account = accountDAO.getAccountByEmail(email);
@@ -113,13 +114,8 @@ public class OrderController {
 			HttpServletRequest request, HttpServletResponse response, ModelMap model) throws IOException {
 
 		
-		if(session ==  null || session.getAttribute("role") == null) {
-			return "redirect:/order.htm";
-		}
-		
-		if(((String)session.getAttribute("role")).equals(Roles.getUser())) {
-			return "redirect:/order.htm";
-		}
+		int auth = Authentication.redirectAuthen(request, response);
+		if(auth != 3 ) return "redirect:/home.htm";
 		
 		if (idOrder == null) {
 			return "redirect:/order.htm";
@@ -179,7 +175,8 @@ public class OrderController {
 	public String cancel(@PathVariable("idOrder") Integer idOrder, @RequestParam("IdReason") Integer IdReason,
 			HttpSession session, ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		Authentication.userAuthen(request, response);
+		int auth = Authentication.redirectAuthen(request, response);
+		if(auth != 3 ) return "redirect:/home.htm";
 		
 		if (idOrder == null) {
 			return "redirect:/order.htm";

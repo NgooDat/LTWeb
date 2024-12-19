@@ -18,6 +18,7 @@ public class JwtUtil {
 	
     //private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 	
+	public static int timeExpired = 10; //60*60 = 1 giờ hết hạn
 	
 	//Dùng tạm khóa cố định này
 	 private static final String SECRET_KEY_BASE64 = "Y2YyM2FjYjM3Y2YyZmY2ZGM4YzZmZGNkYmFzY29mamNhamRpZnJoY2ZodW15cWV0cmS";// Thay bằng một chuỗi Base64 có độ dài đủ mạnh
@@ -32,7 +33,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(pretoken)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 giờ
+                //.setExpiration(new Date(System.currentTimeMillis() + 1000 * timeExpired )) // 1 giờ
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

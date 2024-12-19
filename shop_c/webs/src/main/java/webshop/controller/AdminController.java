@@ -34,7 +34,9 @@ public class AdminController {
 	public String homee(ModelMap model, HttpSession ses,
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
-		Authentication.adminAuthen(request, response); 
+		int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=1) return "redirect:home.htm";
 
 		return "admin/home";
 	}
@@ -44,8 +46,9 @@ public class AdminController {
     @RequestMapping("account")
     public String prodAttributeG(ModelMap model, HttpServletRequest request,
     		HttpServletResponse response) throws IOException {
-    	Authentication.adminAuthen(request, response);
-    	//List<Account> dsAcc = ?
+    	int auth = Authentication.redirectAuthen(request, response);
+		
+		if(auth!=1) return "redirect:home.htm";
     	
     	
     	return "admin/account";

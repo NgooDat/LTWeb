@@ -63,7 +63,9 @@ public class UserController {
 	public String home(ModelMap model, HttpSession ses, 
 			HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
-		Authentication.userHomeAuthen(request, response);
+		int auth = Authentication.redirectAuthen(request, response);
+		if(auth == 2 ) return "redirect:emhome.htm";
+		if(auth == 1 ) return "redirect:adhome.htm";
 
 		List<Product> dsProduct = product.getAllProducts();
 
@@ -89,7 +91,10 @@ public class UserController {
 	public String search(@RequestParam(value = "search",  required = false) String search, ModelMap model
 			,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
-		Authentication.userAuthen(request, response);
+		int auth = Authentication.redirectAuthen(request, response);
+		if(auth == 2 ) return "redirect:emhome.htm";
+		if(auth == 1 ) return "redirect:adhome.htm";
+
 
 		List<Product> dsProduct = product.getAllProducts(); // Lấy tất cả sản phẩm
 		List<ProductDetail> dsDetail = prdd.getAllProductDetails(); // Lấy chi tiết sản phẩm
@@ -121,7 +126,10 @@ public class UserController {
 	@RequestMapping("login")
 	public String login(HttpSession ses, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
-		Authentication.loggedIn(request, response);
+		boolean log = Authentication.isLogin(request, response);
+	    if(log) {
+	    	return "redirect:home.htm";
+	    }
 
 //		if (ses.getAttribute("user") != null) {
 //			return "redirect:/home.htm";
@@ -172,7 +180,10 @@ public class UserController {
 	public String personal(HttpServletRequest request, HttpSession session,
 			HttpServletResponse response) throws IOException {
 		
-		Authentication.loggedOut(request, response);
+		boolean log = Authentication.isLogin(request, response);
+	    if(!log) {
+	    	return "redirect:login.htm";
+	    }
 
 		if (session.getAttribute("user") == null) {
 			return "redirect:/login.htm";
@@ -207,7 +218,10 @@ public class UserController {
 	    HttpServletResponse response) throws IOException
 	 {
 		
-		Authentication.loggedOut(request, response);
+		boolean log = Authentication.isLogin(request, response);
+	    if(!log) {
+	    	return "redirect:login.htm";
+	    }
 	    // Kiểm tra người dùng đã đăng nhập
 	    String userEmail = (String) session.getAttribute("user");
 	    if (userEmail == null) {
@@ -266,7 +280,10 @@ public class UserController {
 	        ModelMap model,
 	        HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
-		Authentication.loggedOut(request, response);
+		boolean log = Authentication.isLogin(request, response);
+	    if(!log) {
+	    	return "redirect:login.htm";
+	    }
 	    // Kiểm tra người dùng đã đăng nhập
 	    String userEmail = (String) session.getAttribute("user");
 
@@ -308,9 +325,9 @@ public class UserController {
 	@RequestMapping(value = "resetpass", method = RequestMethod.GET)
 	public String showResetPasswordForm(HttpSession session, HttpServletRequest request, 
 			HttpServletResponse response) throws IOException {
-		Authentication.loggedOut(request, response);;
-	    if (session.getAttribute("user") == null) {
-	        return "redirect:/login.htm"; // Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
+		boolean log = Authentication.isLogin(request, response);
+	    if(!log) {
+	    	return "redirect:login.htm";
 	    }
 	    return "login/resetpass";
 	}
