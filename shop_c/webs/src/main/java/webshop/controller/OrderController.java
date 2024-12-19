@@ -1,12 +1,17 @@
 package webshop.controller;
 
+import java.io.IOException;
+import java.net.Authenticator;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +40,8 @@ import webshop.entity.OrderStatus;
 import webshop.entity.Product;
 import webshop.entity.ProductDetail;
 import webshop.entity.Reason;
+import webshop.security.Authentication;
+import webshop.security.Roles;
 
 @Controller
 @RequestMapping(value = "order")
@@ -62,15 +69,21 @@ public class OrderController {
 	ReasonDAO reasonDAO;
 
 	@RequestMapping("")
-	public String order(HttpSession session, ModelMap model) {
+	public String order(HttpSession session, ModelMap model,
+			HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		if (session.getAttribute("user") == null) {
-			return "redirect:/login.htm";
-		}
+		Authentication.userAuthen(request, response);
 
 		String email = (String) session.getAttribute("user");
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = null;
+		List<Customer> dsCus = customerDAO.getAllCustomers();
+		for(Customer c: dsCus) {
+			if(c.getAccount().getId() == account.getId()) {
+				customer = c;
+				break;
+			}
+		}
 
 		List<Order> orders = orderDAO.getOrdersByCustomerId(customer.getId());
 		List<Map<String, Object>> ordersList = new ArrayList<Map<String, Object>>();
@@ -96,22 +109,46 @@ public class OrderController {
 	}
 
 	@RequestMapping("orderdetail/{idOrder}")
-	public String orderdetail(@PathVariable("idOrder") Integer idOrder, HttpSession session, ModelMap model) {
+	public String orderdetail(@PathVariable("idOrder") Integer idOrder, HttpSession session, 
+			HttpServletRequest request, HttpServletResponse response, ModelMap model) throws IOException {
 
-		if (session.getAttribute("user") == null) {
-			return "redirect:/login.htm";
-		} else if (idOrder == null) {
+		
+		if(session ==  null || session.getAttribute("role") == null) {
+			return "redirect:/order.htm";
+		}
+		
+		if(((String)session.getAttribute("role")).equals(Roles.getUser())) {
+			return "redirect:/order.htm";
+		}
+		
+		if (idOrder == null) {
 			return "redirect:/order.htm";
 		}
 
 		String email = (String) session.getAttribute("user");
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = null;
+		List<Customer> dsCus = customerDAO.getAllCustomers();
+		for(Customer c: dsCus) {
+			if(c.getAccount().getId() == account.getId()) {
+				customer = c;
+				break;
+			}
+		}
+
 
 		Order order = orderDAO.getOrderById(idOrder);
 		if (order == null) {
 			return "redirect:/order.htm";
 		}
+		
+		//Thêm ràng buộc đơn hàng phải của chủ nhân đang đăng nhập không?
+		if(customer!=null) {
+			if(order.getCustomer().getId() != customer.getId()) {
+				return "redirect:/order.htm";
+			}
+		}
+		
 
 		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
 		List<Map<String, Object>> orderDetailsList = new ArrayList<Map<String, Object>>();
@@ -140,11 +177,11 @@ public class OrderController {
 
 	@RequestMapping("cancel/{idOrder}")
 	public String cancel(@PathVariable("idOrder") Integer idOrder, @RequestParam("IdReason") Integer IdReason,
-			HttpSession session, ModelMap model) {
+			HttpSession session, ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		if (session.getAttribute("user") == null) {
-			return "redirect:/login.htm";
-		} else if (idOrder == null) {
+		Authentication.userAuthen(request, response);
+		
+		if (idOrder == null) {
 			return "redirect:/order.htm";
 		} else if (IdReason == null) {
 			return "redirect:/order.htm";
@@ -152,11 +189,24 @@ public class OrderController {
 
 		String email = (String) session.getAttribute("user");
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = null;
+		List<Customer> dsCus = customerDAO.getAllCustomers();
+		for(Customer c: dsCus) {
+			if(c.getAccount().getId() == account.getId()) {
+				customer = c;
+				break;
+			}
+		}
 
 		Order order = orderDAO.getOrderById(idOrder);
 		if (order == null || (order.getOrderStatus().getId() != 2 && order.getOrderStatus().getId() != 1)) {
 			return "redirect:/order.htm";
+		}
+		//Thêm ràng buộc đơn hàng phải của chủ nhân đang đăng nhập không?
+		if(customer!=null) {
+			if(order.getCustomer().getId() != customer.getId()) {
+				return "redirect:/order.htm";
+			}
 		}
 
 		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
@@ -199,6 +249,8 @@ public class OrderController {
 		order.setUpdateTime(currentDate);
 		order.setReason(reasonDAO.getReasonById(IdReason));
 		orderDAO.updateOrder(order);
+		
+		
 
 		return "redirect:/order/orderdetail/" + idOrder + ".htm";
 	}

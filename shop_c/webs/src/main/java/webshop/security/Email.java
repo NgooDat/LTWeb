@@ -1,26 +1,17 @@
-package webshop.controller;
+package webshop.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Random;
 
 import javax.mail.internet.MimeMessage;
 
-@Controller
-@RequestMapping("/mailer/")
-public class MailerController {
+
+public class Email {
 
     
-    @RequestMapping("form")
-    public String index() {
-        return "mailer/form";
-    }
     
     public static String getCode() {
     	Random random = new Random();

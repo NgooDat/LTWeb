@@ -1,5 +1,6 @@
 package webshop.controller;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,7 +8,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.ui.Model;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -40,7 +43,9 @@ import webshop.entity.Account;
 import webshop.entity.Brand;
 import webshop.entity.Customer;
 import webshop.entity.Type;
+import webshop.security.Authentication;
 import webshop.security.JwtUtil;
+import webshop.security.XSS;
 import webshop.security.Roles;
 import webshop.entity.Origin;
 import webshop.entity.Material;
@@ -81,27 +86,17 @@ public class EmployeeController {
 
     
     @RequestMapping("emhome")
-	public String homee(ModelMap model, HttpSession ses) {
+	public String homee(HttpServletRequest request, HttpServletResponse response) throws IOException {
     	
-//    	if (ses == null || ses.getAttribute("jwtToken") == null) {
-//            return "redirect:home.htm";
-//        }
-//    	String token = (String) ses.getAttribute("jwtToken");
-//    	if (JwtUtil.validateToken(token) == false) {
-//            return "redirect:home.htm";
-//        }
-//    	if(((String)ses.getAttribute("role")).equals(Roles.getUser())) {
-//			return "redirect:home.htm";
-//			
-//		}else if(((String)ses.getAttribute("role")).equals(Roles.getAdmin())){
-//			return "redirect:adhome.htm";
-//		}
+    	Authentication.employAuthen(request, response);
 
 		return "employee/home";
 	}
     
+    
     @RequestMapping("emproduct")
-	public String emproduct(ModelMap model) {
+	public String emproduct(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    	Authentication.employAuthen(request, response);
 
 		List<Product> dsProduct = product.getAllProducts();
 
@@ -126,11 +121,9 @@ public class EmployeeController {
    
     
     @RequestMapping("empersonal")
-	public String personal(HttpServletRequest request, HttpSession session) {
+	public String personal(HttpServletRequest request, HttpSession session,  HttpServletResponse response) throws IOException {
+    	Authentication.employAuthen(request, response);
 
-		if (session.getAttribute("user") == null) {
-			return "redirect:/login.htm";
-		}
 
 		String email = (String) session.getAttribute("user");
 
@@ -151,8 +144,10 @@ public class EmployeeController {
 	}
  
     
-    @RequestMapping("emsearch")
-	public String search(@RequestParam(value = "emsearch", required = false) String search, ModelMap model) {
+    @RequestMapping(value = "emsearch", method = RequestMethod.POST)
+	public String search(@RequestParam(value = "emsearch", required = false) String search, ModelMap model,  
+			HttpServletRequest request, HttpServletResponse response) throws IOException {
+    	Authentication.employAuthen(request, response);
 
 		List<Product> dsProduct = product.getAllProducts(); // Lấy tất cả sản phẩm
 		List<ProductDetail> dsDetail = prdd.getAllProductDetails(); // Lấy chi tiết sản phẩm
@@ -183,7 +178,8 @@ public class EmployeeController {
 
 
     @RequestMapping("emaddproduct")
-    public String home(ModelMap model) {
+    public String home(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    	Authentication.employAuthen(request, response);
     	System.out.println("Thêm sản phẩm thành công: với GET ");
         // Lấy các thông tin về loại sản phẩm, xuất xứ, thương hiệu và chất liệu
         List<Type> dsTypes = type.getAllTypes(); // Lấy tất cả loại sản phẩm
@@ -210,14 +206,16 @@ public class EmployeeController {
     
 
     @RequestMapping(value = "emaddproduct", method = RequestMethod.POST)
-    public String addProduct(HttpServletRequest request, Model model,
+    public String addProduct(HttpServletRequest request, Model model, HttpServletResponse response,
     		@RequestParam(value = "file", required = false) MultipartFile file
-    		) {
+    		) throws IOException {
+    	
+    	Authentication.employAuthen(request, response);
     	
         System.out.println("Thêm sản phẩm thành công: với POST ");
 
         // Lấy các thông tin từ form
-        String name = request.getParameter("name");
+        String name = XSS.sanitizeInput(request.getParameter("name"));
         String description = request.getParameter("description");
         
         String image = request.getParameter("image"); // Lấy tên file từ form
@@ -290,7 +288,8 @@ public class EmployeeController {
     
     
     @RequestMapping("updateprod")
-    public String update(ModelMap model, HttpServletRequest request) {
+    public String update(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    	Authentication.employAuthen(request, response);
     	System.out.println("Thêm sản phẩm thành công: với GET ");
         // Lấy các thông tin về loại sản phẩm, xuất xứ, thương hiệu và chất liệu
         List<Type> dsTypes = type.getAllTypes(); // Lấy tất cả loại sản phẩm
@@ -322,13 +321,15 @@ public class EmployeeController {
     
 
     @RequestMapping(value = "updateprod", method = RequestMethod.POST)
-    public String updateProduct(HttpServletRequest request, Model model,
-            @RequestParam(value = "file", required = false) MultipartFile file) {
+    public String updateProduct(HttpServletRequest request, Model model, HttpServletResponse response,
+            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+    	
+    	Authentication.employAuthen(request, response);
 
         System.out.println("Cập nhật sản phẩm với POST");
 
         // Lấy các thông tin từ form
-        String name = request.getParameter("name");
+        String name = XSS.sanitizeInput(request.getParameter("name"));
         String description = request.getParameter("description");
         String typesID = request.getParameter("typesID");
         String originsID = request.getParameter("originsID");
@@ -397,7 +398,9 @@ public class EmployeeController {
 
     
     @RequestMapping("emproductinfo")
-	public String productinfo(HttpServletRequest request) {
+	public String productinfo(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    	
+    	Authentication.employAuthen(request, response);
 
 		if (request.getParameter("proid") == null) {
 			return "redirect:/home.htm";
@@ -423,7 +426,9 @@ public class EmployeeController {
     
     //theem chi tiet san pham
     @RequestMapping("emaddproductdetail")
-    public String home_addPrD(ModelMap model, HttpServletRequest request) {
+    public String home_addPrD(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    	
+    	Authentication.employAuthen(request, response);
         // Lấy danh sách sản phẩm
     	String id = request.getParameter("productid");
     	int idd = Integer.parseInt(id);
@@ -441,7 +446,9 @@ public class EmployeeController {
     
   //theem chi tiet san pham
     @RequestMapping("emdelprod")
-    public String delprod(ModelMap model, HttpServletRequest request) {
+    public String delprod(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    	
+    	Authentication.employAuthen(request, response);
         // Lấy danh sách sản phẩm
     	String id = request.getParameter("productid");
     	int idd = Integer.parseInt(id);
@@ -462,7 +469,10 @@ public class EmployeeController {
 
     
     @RequestMapping(value = "emaddproductdetail", method = RequestMethod.POST)
-    public String addProductDetail(HttpServletRequest request, Model model,RedirectAttributes redirectAttributes) {
+    public String addProductDetail(HttpServletRequest request, Model model, 
+    		RedirectAttributes redirectAttributes, HttpServletResponse response) throws IOException {
+    	
+    	Authentication.employAuthen(request, response);
     	int productId = Integer.parseInt(request.getParameter("productID"));
     	int price=Integer.parseInt(request.getParameter("price"));
     	int quantity= Integer.parseInt(request.getParameter("quantity"));
@@ -517,7 +527,9 @@ public class EmployeeController {
     
     //thao tác với đặt tính của sản phẩm
     @RequestMapping("emprodattribute")
-    public String prodAttributeG(ModelMap model) {
+    public String prodAttributeG(HttpServletRequest request, ModelMap model, HttpServletResponse response) throws IOException {
+    	
+    	Authentication.employAuthen(request, response);
     	List<Type> dsType = type.getAllTypes();
     	List<Origin> dsOrigins = origin.getAllOrigins();
     	List<Brand> dsBrand = brand.getAllBrands();
@@ -535,7 +547,11 @@ public class EmployeeController {
             @RequestParam(value = "id", required = false) Integer id,
             @RequestParam("name") String name,
             @RequestParam("action") String action,
-            @RequestParam("type") String tp) {
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam("type") String tp) throws IOException {
+    	
+    	Authentication.employAuthen(request, response);
     	
     	String move = "";
 

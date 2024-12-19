@@ -109,7 +109,7 @@
                     </span>
                 </a><!--/shopping_cart-->
                 <form style="max-width: 450px; transform: translateX(15px);" action="search.htm" class="u-border-1 u-border-grey-30 u-radius u-search u-search-left u-white u-search-1"
-                      data-search-token="no-license" metho="post">
+                      data-search-token="no-license" method="post">
                     <button class="u-search-button" type="submit">
                         <span class="u-search-icon u-spacing-10 u-search-icon-1">
                             <svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 56.966 56.966">

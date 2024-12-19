@@ -3,7 +3,6 @@ package webshop.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import webshop.controller.MailerController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -25,10 +24,14 @@ import webshop.entity.Material;
 import webshop.entity.Origin;
 import webshop.entity.Rule;
 import webshop.entity.Type;
+import webshop.security.Authentication;
+import webshop.security.Email;
 import webshop.security.JwtUtil;
 import webshop.security.Roles;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
@@ -55,7 +58,9 @@ public class LoginController {
 	@RequestMapping(value = "/login-auth", method = RequestMethod.POST)
 	public String login(@RequestParam("username") String username, @RequestParam("password") String password,
 			HttpServletRequest request, @RequestParam(value = "remember", required = false) String remember,
-			HttpSession session, Model model) {
+			HttpSession session, Model model, HttpServletResponse response) throws IOException {
+		
+		Authentication.loggedIn(request, response);
 
 		Optional<Account> account = accountDAO.findAccountByUsernameAndPassword(username, password);
 		session = request.getSession(false);
@@ -64,15 +69,19 @@ public class LoginController {
 			Account acc = accountDAO.getAccountByEmail(username);
 			Customer customer = customerDAO.getCustomerById(acc.getId());
 			int rules = acc.getRule().getId();
+			String role = acc.getRule().getName();
 			// phân quyền các kiểu
 			// sau này có Mã hóa sau session + pass
 			
+
 			
-			//Lưu vào session bằng JWT
-			String token = JwtUtil.generateToken(username);
-			session.setAttribute("jwtToken", token);
+			addJWTToken(role, response);
+		    
+		    
+			
 			session.setAttribute("user", username);
-			session.setAttribute("role", acc.getRule().getName());
+			session.setAttribute("role", role);
+			
 			
 			
 			List<Cart> carts = (List<Cart>) session.getAttribute("carts");
@@ -111,7 +120,10 @@ public class LoginController {
 	        @RequestParam("email") String email,
 	        @RequestParam("password") String password,
 	        @RequestParam("confirmPassword") String confirmPassword,
-	        Model model) {
+	        HttpServletRequest request, HttpServletResponse response,
+	        Model model) throws IOException {
+		
+		Authentication.loggedIn(request, response);
 
 	    // Kiểm tra xem mật khẩu nhập lại có khớp không
 	    if (!password.equals(confirmPassword)) {
@@ -146,9 +158,13 @@ public class LoginController {
 	        return "login/register";
 	    }
 	}
+	
+	
+	
 	@RequestMapping(value = "register", method = RequestMethod.GET)
-	public String showRegisterPage(Model model) {
-	    System.out.println("Accessing /register"); // Log để kiểm tra
+	public String showRegisterPage(Model model, HttpServletRequest request, 
+			HttpServletResponse response) throws IOException {
+		Authentication.loggedIn(request, response);
 	    return "login/register"; // Trả về file JSP trong thư mục WEB-INF/views/
 	}
 	
@@ -156,9 +172,13 @@ public class LoginController {
 	 @RequestMapping(value = "update-profile", method = RequestMethod.POST)
 	    public String updateProfile(@RequestParam("name") String name,
 	                                 @RequestParam("phone") String phone,
-	                                 @RequestParam("email") String email,
+	                                 @RequestParam("email") String email, 
+	                                 HttpServletRequest request, 
+	                     			HttpServletResponse response,
 	                                 @RequestParam(value = "file", required = false) MultipartFile file,
-	                                 HttpSession session, Model model) {
+	                                 HttpSession session, Model model) throws IOException {
+		 
+		 Authentication.loggedIn(request, response);
 		 // Kiểm tra định dạng email
 		    String emailPattern = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
 		    if (!email.matches(emailPattern)) {
@@ -224,8 +244,13 @@ public class LoginController {
 	            return "user/personal"; // Quay lại trang nếu có lỗi
 	        }
 	    }
+	 
+	 
 	 @RequestMapping(value = "update-profile", method = RequestMethod.GET)
-	 public String showUpdateProfilePage(HttpSession session, Model model) {
+	 public String showUpdateProfilePage(HttpSession session, Model model,
+			 HttpServletRequest request, 
+  			HttpServletResponse response) throws IOException {
+		 Authentication.loggedIn(request, response);
 	     // Lấy thông tin tài khoản từ session
 	     String username = (String) session.getAttribute("user");
 	     Account account = accountDAO.getAccountByEmail(username);
@@ -247,25 +272,74 @@ public class LoginController {
 	     return "user/personal";  // Trả về trang personal.jsp để hiển thị form
 	 }
 	 
+	 public static void deleteJWT(HttpServletRequest request, HttpServletResponse response) {
+		 
+		 HttpSession session = request.getSession(false);
+			if(session!= null) {
+				if(session.getAttribute("user")!=null ) {
+					session.invalidate();
+				}
+			}
+			
+		 
+		 Cookie[] cookies = request.getCookies();
+	    if (cookies != null) {
+	        for (Cookie cookie : cookies) {
+	            // 3. Tìm cookie có tên "JWT"
+	            if ("JWT".equals(cookie.getName())) {
+	                // 4. Cập nhật giá trị của cookie
+	                cookie.setValue(""); // Hoặc có thể đặt giá trị mới nếu cần
+	                cookie.setMaxAge(0); // Đặt maxAge là 0 để xóa cookie
+	                cookie.setPath("/"); // Đảm bảo path khớp với khi tạo
+	                cookie.setHttpOnly(true); // Đảm bảo HttpOnly khớp
+	                cookie.setSecure(false); // Đặt false nếu không dùng HTTPS
+	                response.addCookie(cookie); // Cập nhật cookie trong response
+	                break;
+	            }
+	        }
+	    }
+	 }
+	 
 	@RequestMapping("logout")
-	public String logout(HttpServletRequest request, HttpSession session) {
+	public String logout(HttpServletRequest request, HttpSession session, HttpServletResponse response) {
 		if (session != null) {
 			session.invalidate();
 		}
-		return "redirect:/login.htm";
+		
+
+	    deleteJWT(request, response);
+		return "redirect:login.htm";
 	}
 	
 	
 	@RequestMapping(value = "inputemail" )
-    public String inputEmail(ModelMap model, HttpServletRequest request, HttpSession session) {
+    public String inputEmail(ModelMap model, HttpServletRequest request, 
+    		HttpSession session, HttpServletResponse response) throws IOException {
 		
+		Authentication.loggedIn(request, response);
 		
 		return "login/inputmail";
 
     }
 	
+	public void addJWTToken(String role, HttpServletResponse response) {
+		//Lưu vào session bằng JWT
+		String token = JwtUtil.generateToken(role);
+		
+		//Lưu jwttoken vào Cookies
+		Cookie cookie = new Cookie("JWT", token);  // "JWT" là tên của cookie
+	    cookie.setHttpOnly(true);  // Đảm bảo cookie không thể bị truy cập qua JavaScript
+	    cookie.setSecure(false);  // Đảm bảo cookie chỉ được gửi qua HTTPS
+	    //cookie.setDomain("abc.com");   
+	    cookie.setPath("/");  // Đảm bảo cookie có thể truy cập trên toàn bộ ứng dụng
+	    cookie.setMaxAge(-1);    // Thời gian sống của cookie khi tắt trình duyệt (giống session)
+	    response.addCookie(cookie);
+	}
+	
 	@RequestMapping(value = "inputcode", method = RequestMethod.POST)
-    public String inputCode(ModelMap model, HttpServletRequest request, HttpSession session) {
+    public String inputCode(ModelMap model, HttpServletRequest request, 
+    		HttpSession session, HttpServletResponse response) throws IOException {
+		Authentication.loggedIn(request, response);
 		String mail = request.getParameter("mail");
 		session.setAttribute("mail", mail);
 		
@@ -275,18 +349,20 @@ public class LoginController {
 		//List<Account> acc = accountDAO.get
 		
 		//Gửi code
-		String code = MailerController.getCode();
+		String code = Email.getCode();
 		session.setAttribute("code", code);
 		code = code + " là mã khôi phục tài khoản webshop của bạn!";
 		
-		String send = new MailerController().sendCode(mailSender, mail, code, code);
+		String send = new Email().sendCode(mailSender, mail, code, code);
 		return "login/inputcode";
 
     }
 	
 	
 	@RequestMapping(value = "authcode", method = RequestMethod.POST)
-    public String authcode(ModelMap model, HttpServletRequest request, HttpSession session) {
+    public String authcode(ModelMap model, HttpServletRequest request, HttpSession session
+    		, HttpServletResponse response) throws IOException {
+		Authentication.loggedIn(request, response);
 		String code = request.getParameter("code");
 		
 		String send = (String)session.getAttribute("code");
@@ -301,7 +377,10 @@ public class LoginController {
 	
 	
 	@RequestMapping(value = "newpass", method = RequestMethod.POST)
-    public String newpass(ModelMap model, HttpServletRequest request, HttpSession session) {
+    public String newpass(ModelMap model, HttpServletRequest request, HttpSession session
+    		, HttpServletResponse response) throws IOException {
+		
+		Authentication.loggedIn(request, response);
 		String pass = request.getParameter("password");
 		String repass = request.getParameter("repass");
 		

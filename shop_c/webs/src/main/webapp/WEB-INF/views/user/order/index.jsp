@@ -1,7 +1,10 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
 <!DOCTYPE html>
 <html style="font-size: 16px;">
 
@@ -26,7 +29,11 @@
 	<section class="u-clearfix u-block-90d4-1" custom-posts-hash="[T,[T,T],[[[I,T],[I,T],[I,T]],[],[],[]]]"
 		data-section-properties="{&quot;margin&quot;:&quot;both&quot;,&quot;stretch&quot;:true}" data-id="90d4"
 		data-style="shopping-cart-1" id="sec-dd88">
-
+		
+		<c:if test="${empty orders}">
+		    <jsp:include page="/WEB-INF/views/user/noorder.jsp" />
+		</c:if>
+		<c:if test="${not empty orders}">
 		<div class="u-clearfix u-sheet u-block-90d4-2">
 
 			<div class="u-cart-button-container">
@@ -89,6 +96,8 @@
 												<div class="u-old-price"
 													style="text-decoration: line-through !important;"></div>
 												<div class="u-price" style="font-weight: 700; font-size: 1rem;">
+												
+												
 													<a class="u-product-title-link"
 														href="order/orderdetail/${order.order.id}.htm">${order.order.id}</a>
 												</div>
@@ -101,6 +110,7 @@
 											<div class="u-price-wrapper">
 												<div class="u-old-price"
 													style="text-decoration: line-through !important;"></div>
+			
 												<div class="u-price" style="font-weight: 700; font-size: 1rem;">
 													<fmt:formatDate value="${order.order.createTime}"
 														pattern="dd/MM/yyyy HH:mm:ss" />
@@ -306,6 +316,7 @@
 				</style>
 			</div>
 		</div>
+		</c:if>
 		<style data-mode="XL" data-visited="true">
 			@media (min-width : 1200px) {
 				.u-block-90d4-2 {
