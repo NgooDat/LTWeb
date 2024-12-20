@@ -95,7 +95,7 @@ public class PaymentController {
 			return "redirect:/login.htm";
 		}
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		// Lấy danh sách idCart từ session
 		@SuppressWarnings("unchecked")
@@ -168,7 +168,7 @@ public class PaymentController {
 		}
 
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		List<Map<String, Object>> selectProducts = new ArrayList<>();
 		List<Product> dsProduct = productDAO.getAllProducts();
@@ -220,7 +220,7 @@ public class PaymentController {
 			@RequestParam("paymentMethod") int paymentMethod, Model model, HttpSession session) {
 		String email = (String) session.getAttribute("user");
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
 
@@ -321,7 +321,7 @@ public class PaymentController {
 		}
 
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		Date currentDate = new Date();
 
@@ -410,7 +410,7 @@ public class PaymentController {
 
 				String email = (String) session.getAttribute("user");
 				Account account = accountDAO.getAccountByEmail(email);
-				Customer customer = customerDAO.getCustomerById(account.getId());
+				Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 				Date currentDate = new Date();
 
@@ -525,7 +525,7 @@ public class PaymentController {
 		}
 
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		try {
 			// Gọi service tạo URL thanh toán
@@ -774,7 +774,7 @@ public class PaymentController {
 		try {
 
 			Account account = accountDAO.getAccountByEmail(email);
-			Customer customer = customerDAO.getCustomerById(account.getId());
+			Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 			Date currentDate1 = new Date();
 
@@ -892,7 +892,7 @@ public class PaymentController {
 		}
 
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		// Tạo thông tin thanh toán
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd");

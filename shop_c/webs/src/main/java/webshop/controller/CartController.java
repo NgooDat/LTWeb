@@ -55,9 +55,9 @@ public class CartController {
 		String email = (String) session.getAttribute("user");
 
 		if (email != null) {
-			Account acc = accountDAO.getAccountByEmail(email);
-			Customer cus = customerDAO.getCustomerById(acc.getId());
-			givenCustomerId = cus.getId();
+			Account account = accountDAO.getAccountByEmail(email);
+			Customer customer = customerDAO.getCustomerByAccountID(account.getId());
+			givenCustomerId = customer.getId();
 			dsCart = cartDAO.getAllCarts();
 		} else {
 			givenCustomerId = 0;
@@ -134,7 +134,7 @@ public class CartController {
 
 		if (email != null) {
 			Account account = accountDAO.getAccountByEmail(email);
-			Customer customer = customerDAO.getCustomerById(account.getId());
+			Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 			productDetail = productDetailDAO.getProductDetailById(pdid);
 			carts = cartDAO.getCartsByCustomerId(customer.getId());
 

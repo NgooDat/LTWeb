@@ -79,7 +79,7 @@ public class OrderController {
 
 	    String email = (String) session.getAttribute("user");
 	    Account account = accountDAO.getAccountByEmail(email);
-	    Customer customer = customerDAO.getCustomerById(account.getId());
+	    Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 	    List<Order> orders = orderDAO.getOrdersByCustomerId(customer.getId());
 	    List<Map<String, Object>> ordersList = new ArrayList<>();
@@ -177,10 +177,10 @@ public class OrderController {
 
 		String email = (String) session.getAttribute("user");
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		Order order = orderDAO.getOrderById(idOrder);
-		if (order == null) {
+		if (order == null  || order.getCustomer().getId() != customer.getId()) {
 			return "redirect:/order.htm";
 		}
 
@@ -224,10 +224,10 @@ public class OrderController {
 
 		String email = (String) session.getAttribute("user");
 		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		Order order = orderDAO.getOrderById(idOrder);
-		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2)) {
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2) || order.getCustomer().getId() != customer.getId()) {
 			return "redirect:/order.htm";
 		}
 

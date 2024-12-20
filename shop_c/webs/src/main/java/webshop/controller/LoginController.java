@@ -70,7 +70,7 @@ public class LoginController {
 		if (account.isPresent()) {
 
 			Account acc = accountDAO.getAccountByEmail(username);
-			Customer customer = customerDAO.getCustomerById(acc.getId());
+			Customer customer = customerDAO.getCustomerByAccountID(acc.getId());
 			int rules = acc.getRule().getId();
 			String role = acc.getRule().getName();
 			// phân quyền các kiểu
@@ -208,7 +208,7 @@ public class LoginController {
 		}
 
 		// Cập nhật thông tin cá nhân
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 		if (customer == null) {
 			model.addAttribute("message", "Không tìm thấy thông tin người dùng.");
 			return "login/login";
@@ -268,7 +268,7 @@ public class LoginController {
 		}
 
 		// Lấy thông tin cá nhân
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 		if (customer == null) {
 			model.addAttribute("message", "Không tìm thấy thông tin người dùng.");
 			return "login/login"; // Chuyển hướng đến trang login nếu không tìm thấy thông tin cá nhân
