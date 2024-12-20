@@ -1,6 +1,7 @@
 package webshop.controller;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,14 +37,11 @@ import webshop.entity.Order;
 import webshop.entity.OrderDetail;
 import webshop.entity.Product;
 import webshop.entity.ProductDetail;
+import webshop.security.Authentication;
 
 @Controller
 public class UserController {
 	
-	private String adrule = "1";
-	private String emrule  = "2";
-	private String userrule = "3";
-
 	@Autowired
 	AccountDAO accd;
 	@Autowired
@@ -61,18 +60,12 @@ public class UserController {
 	OrderStatusDAO osd;
 
 	@RequestMapping("home")
-	public String home(ModelMap model, HttpSession ses) {
+	public String home(ModelMap model, HttpSession ses, 
+			HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
-		if(ses.getAttribute("rules")!=null) {
-			if(((String)ses.getAttribute("rules")).equals(adrule)) {
-				return "redirect:adhome.htm";
-				
-			}else if(((String)ses.getAttribute("rules")).equals(emrule)){
-				return "redirect:emhome.htm";
-			}
-		}
-		
-		
+		int auth = Authentication.redirectAuthen(request, response);
+		if(auth == 2 ) return "redirect:emhome.htm";
+		if(auth == 1 ) return "redirect:adhome.htm";
 
 		List<Product> dsProduct = product.getAllProducts();
 
@@ -94,9 +87,14 @@ public class UserController {
 		return "user/home";
 	}
 
-	@RequestMapping("search")
-	public String search(@RequestParam(value = "search", required = false) String search, ModelMap model) {
+	@RequestMapping(value = "search", method = RequestMethod.POST)
+	public String search(@RequestParam(value = "search",  required = false) String search, ModelMap model
+			,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
+		int auth = Authentication.redirectAuthen(request, response);
+		if(auth == 2 ) return "redirect:emhome.htm";
+		if(auth == 1 ) return "redirect:adhome.htm";
+
 
 		List<Product> dsProduct = product.getAllProducts(); // Lấy tất cả sản phẩm
 		List<ProductDetail> dsDetail = prdd.getAllProductDetails(); // Lấy chi tiết sản phẩm
@@ -126,11 +124,17 @@ public class UserController {
 	}
 
 	@RequestMapping("login")
-	public String login(HttpSession ses) {
+	public String login(HttpSession ses, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		boolean log = Authentication.isLogin(request, response);
+	    if(log) {
+	    	return "redirect:home.htm";
+	    }
 
-		if (ses.getAttribute("user") != null) {
-			return "redirect:/home.htm";
-		}
+//		if (ses.getAttribute("user") != null) {
+//			return "redirect:/home.htm";
+//			
+//		}
 		return "login/login";
 	}
 
@@ -138,9 +142,18 @@ public class UserController {
 	public String error() {
 		return "error";
 	}
+	
+	
+	@RequestMapping(value="productinfo", method = RequestMethod.GET)
+	public String getproductinfo(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		return "redirect:home.htm";
+	}
 
-	@RequestMapping("productinfo")
-	public String productinfo(HttpServletRequest request) {
+	@RequestMapping(value="productinfo", method = RequestMethod.POST)
+	public String productinfo(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		
 
 		if (request.getParameter("proid") == null) {
 			return "redirect:/home.htm";
@@ -164,7 +177,13 @@ public class UserController {
 	}
 
 	@RequestMapping("personal")
-	public String personal(HttpServletRequest request, HttpSession session) {
+	public String personal(HttpServletRequest request, HttpSession session,
+			HttpServletResponse response) throws IOException {
+		
+		boolean log = Authentication.isLogin(request, response);
+	    if(!log) {
+	    	return "redirect:login.htm";
+	    }
 
 		if (session.getAttribute("user") == null) {
 			return "redirect:/login.htm";
@@ -195,8 +214,14 @@ public class UserController {
 	    @RequestParam("email") String email,
 	    @RequestParam(value = "file", required = false) MultipartFile file,
 	    HttpSession session,
-	    HttpServletRequest request
-	) {
+	    HttpServletRequest request,
+	    HttpServletResponse response) throws IOException
+	 {
+		
+		boolean log = Authentication.isLogin(request, response);
+	    if(!log) {
+	    	return "redirect:login.htm";
+	    }
 	    // Kiểm tra người dùng đã đăng nhập
 	    String userEmail = (String) session.getAttribute("user");
 	    if (userEmail == null) {
@@ -252,12 +277,16 @@ public class UserController {
 	        @RequestParam("newPassword") String newPassword,
 	        @RequestParam("confirmPassword") String confirmPassword,
 	        HttpSession session,
-	        ModelMap model) {
+	        ModelMap model,
+	        HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		boolean log = Authentication.isLogin(request, response);
+	    if(!log) {
+	    	return "redirect:login.htm";
+	    }
 	    // Kiểm tra người dùng đã đăng nhập
 	    String userEmail = (String) session.getAttribute("user");
-	    if (userEmail == null) {
-	        return "redirect:/login.htm"; // Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
-	    }
+
 
 	    // Lấy thông tin tài khoản từ cơ sở dữ liệu
 	    Account acc = accd.getAccountByEmail(userEmail);
@@ -294,9 +323,11 @@ public class UserController {
 
 
 	@RequestMapping(value = "resetpass", method = RequestMethod.GET)
-	public String showResetPasswordForm(HttpSession session) {
-	    if (session.getAttribute("user") == null) {
-	        return "redirect:/login.htm"; // Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
+	public String showResetPasswordForm(HttpSession session, HttpServletRequest request, 
+			HttpServletResponse response) throws IOException {
+		boolean log = Authentication.isLogin(request, response);
+	    if(!log) {
+	    	return "redirect:login.htm";
 	    }
 	    return "login/resetpass";
 	}

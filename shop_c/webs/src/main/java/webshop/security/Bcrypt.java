@@ -9,7 +9,6 @@ public class Bcrypt {
         return de.svws_nrw.ext.jbcrypt.BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
-    // So sánh mật khẩu nhập vào với mật khẩu đã mã hóa
     public static boolean matches(String rawPassword, String encodedPassword) {
         return de.svws_nrw.ext.jbcrypt.BCrypt.checkpw(rawPassword, encodedPassword);
     }

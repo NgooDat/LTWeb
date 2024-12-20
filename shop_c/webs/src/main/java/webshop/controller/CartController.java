@@ -47,6 +47,8 @@ public class CartController {
 
 	@RequestMapping("")
 	public String cart(HttpSession session, ModelMap model) {
+		
+		
 
 		List<Cart> dsCart;
 		int givenCustomerId;
@@ -124,7 +126,7 @@ public class CartController {
 
 		ProductDetail productDetail = productDetailDAO.getProductDetailById(pdid);
 		if (productDetail == null) {
-			return "{\"message\": \"Deo có sản phẩm này!\", \"status\": \"false\"}";
+			return "{\"message\": \"Không tồn tại sản phẩm này!\", \"status\": \"false\"}";
 		}
 
 		String email = (String) session.getAttribute("user");
