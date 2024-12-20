@@ -60,13 +60,14 @@
             
           </div>
 
-          <!-- Email -->
+           <!-- Email -->
           <div class="u-form-email u-form-group">
             <label for="email-92f3" class="u-label">Email</label>
             <input type="email" value="${acc.email}" placeholder="Email" id="email-92f3" name="email" class="input u-input u-input-rectangle" required>
                 <span id="emailError" style="color: red; display: none;">Email không hợp lệ!</span> <!-- Hiển thị lỗi -->
             
           </div>
+
 
           <!-- Nút submit -->
           <div class="u-align-center u-form-group u-form-submit">
