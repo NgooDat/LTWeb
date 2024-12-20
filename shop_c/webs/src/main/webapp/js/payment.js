@@ -48,30 +48,36 @@ document.addEventListener("DOMContentLoaded", function() {
 	});
 
 	function setDefaultFormAction() {
-	    const selectedValue = paymentSelect.value;
-	    const product0 = document.getElementById("product0"); // Kiểm tra sự tồn tại của phần tử có id="product0"
-	    const table = document.querySelector("table");
-	    const idOrder = table ? table.id : null; // Lấy idOrder từ bảng nếu tồn tại
+		const selectedValue = paymentSelect.value;
+		const product0 = document.getElementById("product0"); // Kiểm tra sự tồn tại của phần tử có id="product0"
+		const table = document.querySelector("table");
+		const idOrder = table ? table.id : null; // Lấy idOrder từ bảng nếu tồn tại
 
-	    if (product0) {
-	        // Nếu tồn tại phần tử có id="product0"
-	        if (selectedValue === "1") {
-	            form.action = `payment/repurchase/${idOrder}.htm`;
-	            form.method = "post";
-	        } else if (selectedValue === "2") {
-	            form.action = `payment/repurchase/vnpay/${idOrder}.htm`;
-	            form.method = "get";
-	        }
-	    } else {
-	        // Nếu không tồn tại phần tử có id="product0"
-	        if (selectedValue === "1") {
-	            form.action = "payment/result.htm";
-	            form.method = "post";
-	        } else if (selectedValue === "2") {
-	            form.action = "payment/vnpay.htm";
-	            form.method = "get";
-	        }
-	    }
+		if (product0) {
+			// Nếu tồn tại phần tử có id="product0"
+			if (selectedValue === "1") {
+				form.action = `payment/repurchase/${idOrder}.htm`;
+				form.method = "post";
+			} else if (selectedValue === "2") {
+				form.action = `payment/repurchase/vnpay/${idOrder}.htm`;
+				form.method = "get";
+			} else if (selectedValue === "3") {
+				form.action = `payment/repurchase/zalopay/${idOrder}.htm`;
+				form.method = "get";
+			}
+		} else {
+			// Nếu không tồn tại phần tử có id="product0"
+			if (selectedValue === "1") {
+				form.action = "payment/result.htm";
+				form.method = "post";
+			} else if (selectedValue === "2") {
+				form.action = "payment/vnpay.htm";
+				form.method = "get";
+			} else if (selectedValue === "3") {
+				form.action = "payment/zalopay.htm";
+				form.method = "get";
+			}
+		}
 	}
 
 	// Gọi hàm để thiết lập giá trị mặc định khi trang được tải

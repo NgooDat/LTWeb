@@ -11,10 +11,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
-public class PaymentService {
+public class VNPayService {
 
 	@Autowired
-	private Config config;
+	private VNPayConfig config;
 
 	public JsonObject createPayment(HttpServletRequest request, long amount, String bankCode, String language)
 			throws Exception {
@@ -62,7 +62,7 @@ public class PaymentService {
 		vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
 		// Thêm tham số ReturnUrl
-		String returnUrl = "http://localhost:8080/shop_c/payment/result.htm"; // Đặt URL trả về sau khi thanh toán
+		String returnUrl = "http://localhost:8080/shop_c/payment/result/vnpay.htm"; // Đặt URL trả về sau khi thanh toán
 		vnp_Params.put("vnp_ReturnUrl", returnUrl);
 
 		// Tạo danh sách tham số và mã hóa
@@ -84,7 +84,7 @@ public class PaymentService {
 		query.deleteCharAt(query.length() - 1);
 
 		// Tạo mã bảo mật
-		String vnp_SecureHash = Config.hmacSHA512(config.secretKey, hashData.toString());
+		String vnp_SecureHash = VNPayConfig.hmacSHA512(config.secretKey, hashData.toString());
 		query.append("&vnp_SecureHash=").append(vnp_SecureHash);
 
 		// Tạo URL thanh toán

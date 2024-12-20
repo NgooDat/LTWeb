@@ -1,5 +1,8 @@
 package webshop.controller;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -62,42 +65,110 @@ public class OrderController {
 	ReasonDAO reasonDAO;
 
 	@RequestMapping("")
-	public String order(HttpSession session, ModelMap model) {
+	public String order(
+	        @RequestParam(value = "idstatus", required = false) Integer idstatus,
+	        @RequestParam(value = "idorder", required = false) Integer idorder,
+	        @RequestParam(value = "fromDate", required = false) String fromDate,
+	        @RequestParam(value = "toDate", required = false) String toDate,
+	        HttpSession session, 
+	        ModelMap model) {
 
-		if (session.getAttribute("user") == null) {
-			return "redirect:/login.htm";
+	    if (session.getAttribute("user") == null) {
+	        return "redirect:/login.htm";
+	    }
+
+	    String email = (String) session.getAttribute("user");
+	    Account account = accountDAO.getAccountByEmail(email);
+	    Customer customer = customerDAO.getCustomerById(account.getId());
+
+	    List<Order> orders = orderDAO.getOrdersByCustomerId(customer.getId());
+	    List<Map<String, Object>> ordersList = new ArrayList<>();
+	    
+	    if(idorder != null) {
+	    	Order order = orderDAO.getOrderById(idorder);
+	    	if(order == null || order.getCustomer().getId() != customer.getId()) {
+	    		model.addAttribute("orders", ordersList);
+	    	    return "user/order/index";
+	    	}
+	    	 Map<String, Object> ordersMap = new HashMap<>();
+	    	int totalQuantity = 0;
+            List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(order.getId());
+
+            for (OrderDetail orderDetail : orderDetails) {
+                totalQuantity += orderDetail.getQuantity();
+            }
+            ordersMap.put("order", order);
+            ordersMap.put("totalQuantity", totalQuantity);
+            ordersList.add(ordersMap);
+            model.addAttribute("orders", ordersList);
+    	    return "user/order/index";
+	    }
+	    
+	    if (orders != null) {
+	        for (Order order : orders) {
+	            boolean matchesStatus;
+	            if (idstatus != null && idstatus == 1) {
+	                matchesStatus = order.getPaymentStatus() == 0;
+	            } else {
+	                matchesStatus = (idstatus == null || order.getOrderStatus().getId() == idstatus);
+	            }
+
+	            boolean matchesDateRange = isWithinDateRange(order, fromDate, toDate);
+
+	            if (matchesStatus && matchesDateRange) {
+	                Map<String, Object> ordersMap = new HashMap<>();
+	                int totalQuantity = 0;
+	                List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(order.getId());
+
+	                for (OrderDetail orderDetail : orderDetails) {
+	                    totalQuantity += orderDetail.getQuantity();
+	                }
+	                ordersMap.put("order", order);
+	                ordersMap.put("totalQuantity", totalQuantity);
+	                ordersList.add(ordersMap);
+	            }
+	        }
+	    }
+
+	    Collections.reverse(ordersList);
+	    model.addAttribute("orders", ordersList);
+	    return "user/order/index";
+	}
+
+	private boolean isWithinDateRange(Order order, String fromDate, String toDate) {
+		if (fromDate == null && toDate == null) {
+			return true;
 		}
 
-		String email = (String) session.getAttribute("user");
-		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerById(account.getId());
+		// Lấy ngày tạo của đơn hàng (chuyển sang LocalDateTime)
+		Date orderDate = order.getCreateTime();
+		LocalDateTime orderDateTime = orderDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-		List<Order> orders = orderDAO.getOrdersByCustomerId(customer.getId());
-		List<Map<String, Object>> ordersList = new ArrayList<Map<String, Object>>();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-		if (orders != null) {
-			for (Order order : orders) {
-				Map<String, Object> ordersMap = new HashMap<String, Object>();
-				int totalQuantity = 0;
-				List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(order.getId());
-
-				for (OrderDetail orderDetail : orderDetails) {
-					totalQuantity += orderDetail.getQuantity();
-				}
-				ordersMap.put("order", order);
-				ordersMap.put("totalQuantity", totalQuantity);
-				ordersList.add(ordersMap);
+		// Kiểm tra ngày từ
+		if (fromDate != null) {
+			LocalDateTime from = LocalDateTime.parse(fromDate + "T00:00:00");
+			if (orderDateTime.isBefore(from)) {
+				return false;
 			}
 		}
 
-		Collections.reverse(ordersList);
-		model.addAttribute("orders", ordersList);
-		return "user/order/index";
+		// Kiểm tra ngày đến
+		if (toDate != null) {
+			LocalDateTime to = LocalDateTime.parse(toDate + "T23:59:59");
+			if (orderDateTime.isAfter(to)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	@RequestMapping("orderdetail/{idOrder}")
 	public String orderdetail(@PathVariable("idOrder") Integer idOrder, HttpSession session, ModelMap model) {
-
+		session.removeAttribute("idOrderResult");
+		
 		if (session.getAttribute("user") == null) {
 			return "redirect:/login.htm";
 		} else if (idOrder == null) {
@@ -134,6 +205,7 @@ public class OrderController {
 		model.addAttribute("order", order);
 		model.addAttribute("orderDetails", orderDetailsList);
 		model.addAttribute("cancelReasons", reasonDAO.getAllReasons());
+		model.addAttribute("paymentMethods", paymentMethodDAO.getAllPaymentMethods());
 
 		return "user/order/detail";
 	}
@@ -155,7 +227,7 @@ public class OrderController {
 		Customer customer = customerDAO.getCustomerById(account.getId());
 
 		Order order = orderDAO.getOrderById(idOrder);
-		if (order == null || (order.getOrderStatus().getId() != 2 && order.getOrderStatus().getId() != 1)) {
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2)) {
 			return "redirect:/order.htm";
 		}
 
@@ -172,7 +244,7 @@ public class OrderController {
 
 				if (carts != null) {
 					for (Cart cart : carts) {
-						if (cart.getProductDetail() == productDetail) {
+						if (cart.getProductDetail().getId() == productDetail.getId()) {
 							cart.setQuantity(orderDetail.getQuantity());
 							cart.setTotalPrice(total);
 

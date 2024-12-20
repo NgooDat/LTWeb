@@ -18,7 +18,10 @@ function confirmCancel() {
 		return;
 	}
 
-	const reasonId = selectedReason.value;
+	const customerElement = document.querySelector('#idCustomer .left strong');
+	const idCustomer = customerElement.nextSibling.textContent.trim();
+
+	const idReason = selectedReason.value;
 
 	if (confirm("Bạn có chắc chắn muốn hủy đơn này?")) {
 		// Lấy idOrder từ URL
@@ -26,35 +29,17 @@ function confirmCancel() {
 		const idOrder = urlParams[urlParams.length - 1].split('.')[0];  // Lấy phần cuối của URL và bỏ ".htm"
 
 		// Redirect to cancel order URL
-		window.location.href = `order/cancel/${idOrder}.htm?IdReason=${reasonId}`;
+		window.location.href = `emorder/cancel/${idOrder}/${idCustomer}.htm?idReason=${idReason}`;
 	}
-}
-
-function openPaymentModal() {
-	const modal = document.getElementById("paymentModal");
-	modal.style.display = "flex";
-}
-
-function closePaymentModal() {
-	const modal = document.getElementById("paymentModal");
-	modal.style.display = "none";
-}
-
-function confirmPayment() {
-	const selectedMethod = document.querySelector('input[name="method"]:checked');
-	if (!selectedMethod) {
-		alert("Vui lòng chọn phương thức thanh toán!");
-		return;
-	}
-
-	const idPaymentMethod = selectedMethod.value;
-	const urlParams = window.location.pathname.split('/');
-	const idOrder = urlParams[urlParams.length - 1].split('.')[0];
-
-	window.location.href = `payment/${idOrder}.htm?idPaymentMethod=${idPaymentMethod}`;
 }
 
 document.getElementById('custom-dropdown-menu').addEventListener('change', updateUrlWithFilters);
+document.getElementById('idcustom-search-input').addEventListener('keydown', function(event) {
+	if (event.key === 'Enter') {
+		event.preventDefault();
+		updateUrlWithFilters();
+	}
+});
 document.getElementById('idorder-search-input').addEventListener('keydown', function(event) {
 	if (event.key === 'Enter') {
 		event.preventDefault();
@@ -74,7 +59,7 @@ document.getElementById('clear-date').addEventListener('click', function() {
 	urlParams.delete('toDate');
 
 	// Cập nhật URL mà không làm mới toàn bộ trang
-	const newUrl = 'order.htm?' + urlParams.toString();
+	const newUrl = 'emorder.htm?' + urlParams.toString();
 
 	// Điều hướng đến URL đã được cập nhật
 	window.location.href = newUrl;
@@ -89,11 +74,13 @@ document.getElementById('clear-date').addEventListener('click', function() {
 
 function updateUrlWithFilters() {
 	const dropdown = document.getElementById('custom-dropdown-menu');
+	const idcustomerInput = document.getElementById('idcustom-search-input');
 	const idorderInput = document.getElementById('idorder-search-input');
 	const fromDateInput = document.getElementById('fromDate');
 	const toDateInput = document.getElementById('toDate');
 
 	const idstatus = dropdown.value !== '0' ? dropdown.value : null;
+	const idcustomer = idcustomerInput.value.trim();
 	const idorder = idorderInput.value.trim();
 	const fromDate = fromDateInput.value;
 	const toDate = toDateInput.value;
@@ -101,16 +88,21 @@ function updateUrlWithFilters() {
 	const urlParams = new URLSearchParams(window.location.search);
 
 	// Update parameters
+	if (idorder && /^\d+$/.test(idorder)) {
+		urlParams.set('idorder', idorder);
+	} else {
+		urlParams.delete('idorder');
+	}
 	if (idstatus) {
 		urlParams.set('idstatus', idstatus);
 	} else {
 		urlParams.delete('idstatus');
 	}
 
-	if (idorder && /^\d+$/.test(idorder)) {
-		urlParams.set('idorder', idorder);
+	if (idcustomer && /^\d+$/.test(idcustomer)) {
+		urlParams.set('idcustomer', idcustomer);
 	} else {
-		urlParams.delete('idorder');
+		urlParams.delete('idcustomer');
 	}
 
 	if (fromDate) {
@@ -126,7 +118,7 @@ function updateUrlWithFilters() {
 	}
 
 	// Redirect with updated URL
-	window.location.href = 'order.htm?' + urlParams.toString();
+	window.location.href = 'emorder.htm?' + urlParams.toString();
 }
 
 // Pre-fill input fields from URL on page load
@@ -134,12 +126,14 @@ window.addEventListener('DOMContentLoaded', () => {
 	const urlParams = new URLSearchParams(window.location.search);
 
 	const dropdown = document.getElementById('custom-dropdown-menu');
+	const idcustomerInput = document.getElementById('idcustom-search-input');
 	const idorderInput = document.getElementById('idorder-search-input');
 	const fromDateInput = document.getElementById('fromDate');
 	const toDateInput = document.getElementById('toDate');
 
-	dropdown.value = urlParams.get('idstatus') || '0';
 	idorderInput.value = urlParams.get('idorder') || '';
+	dropdown.value = urlParams.get('idstatus') || '0';
+	idcustomerInput.value = urlParams.get('idcustomer') || '';
 	fromDateInput.value = urlParams.get('fromDate') || '';
 	toDateInput.value = urlParams.get('toDate') || '';
 });

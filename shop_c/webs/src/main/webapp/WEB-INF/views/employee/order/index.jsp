@@ -23,7 +23,7 @@
 	data-page-coloring-types="{&quot;light&quot;:[&quot;clean&quot;,&quot;clean&quot;],&quot;colored&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;],&quot;dark&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;]}"
 	data-page-category="&quot;Cart&quot;">
 
-	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
+	<jsp:include page="/WEB-INF/views/layout/eheader.jsp" />
 
 	<section class="u-clearfix u-block-90d4-1"
 		custom-posts-hash="[T,[T,T],[[[I,T],[I,T],[I,T]],[],[],[]]]"
@@ -33,7 +33,7 @@
 		<div class="u-clearfix u-sheet u-block-90d4-2">
 
 			<div class="u-cart-button-container">
-				<a href="home.htm" style="position: absolute; margin-left: 45px"
+				<a href="emhome.htm" style="position: absolute; margin-left: 45px"
 					class="u-active-none u-btn u-button-style u-cart-continue-shopping u-hover-none u-none u-text-body-color u-block-90d4-58"><span
 					class="u-icon u-block-90d4-59"><svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -49,7 +49,6 @@
 								</g>
 							</g>
 						</svg></span>&nbsp;Quay lại </a>
-
 				<h2
 					class=" gioHang u-align-center-lg u-align-center-md u-align-center-sm u-align-center-xs u-custom-font u-font-ubuntu u-text u-text-default u-text-1">
 					Đơn hàng</h2>
@@ -68,15 +67,18 @@
 
 			<div class="custom-search-container">
 			    <label>Mã đơn hàng:</label> 
-			    <input id="idorder-search-input" class="custom-search-input" type="text" name="idordersearch" value="" placeholder="Nhập mã đơn hàng">
-			    			
-				<div class="date-range">
-					<label for="fromDate">Từ: </label> <input type="date" id="fromDate"
-						name="fromDate" class="custom-date-input" /> <label for="toDate">Đến:
-					</label> <input type="date" id="toDate" name="toDate"
-						class="custom-date-input" />
-					<button type="button" id="clear-date" class="clear-date-button">Hủy</button>
-				</div>
+			    <input id="idorder-search-input" class="custom-search-input" type="text" name="emsearch" value="" placeholder="Nhập mã đơn hàng">
+			    
+			    <label>Mã khách hàng:</label> 
+			    <input id="idcustom-search-input" class="custom-search-input" type="text" name="emsearch" value="" placeholder="Nhập mã khách hàng">
+			
+			    <div class="date-range">
+			        <label for="fromDate">Từ: </label> 
+			        <input type="date" id="fromDate" name="fromDate" class="custom-date-input" /> 
+			        <label for="toDate">Đến: </label> 
+			        <input type="date" id="toDate" name="toDate" class="custom-date-input" />
+			        <button type="button" id="clear-date" class="clear-date-button">Hủy</button>
+			    </div>
 			</div>
 
 			<div class="u-cart u-expanded-width u-layout-grid u-block-90d4-6">
@@ -84,18 +86,22 @@
 					class="u-cart-products-table u-table u-table-responsive u-block-90d4-7">
 					<table class="u-table-entity u-block-90d4-12">
 						<colgroup>
-							<col width="15%">
+							<col width="12%">
+							<col width="13%">
 							<col width="20%">
 							<col width="15%">
 							<col width="15%">
 							<col width="15%">
-							<col width="20%">
+							<col width="10%">
 						</colgroup>
 						<thead class="u-custom-color-1 u-table-header u-block-90d4-13">
 							<tr style="height: 33px;">
 								<th
 									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-14">Mã
 									đơn hàng</th>
+								<th
+									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-14">Mã
+									khách hàng</th>
 								<th
 									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-12">Ngày
 									tạo</th>
@@ -129,7 +135,18 @@
 												<div class="u-price"
 													style="font-weight: 700; font-size: 1rem;">
 													<a class="u-product-title-link"
-														href="order/orderdetail/${order.order.id}.htm">${order.order.id}</a>
+														href="emorder/orderdetail/${order.order.id}.htm">${order.order.id}</a>
+												</div>
+											</div>
+										</div>
+									</td>
+									<td
+										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-45">
+										<div
+											class="center u-cart-product-price u-product-control u-product-price u-block-90d4-46">
+											<div class="u-price-wrapper">
+												<div class="u-price"
+													style="font-weight: 700; font-size: 1rem;">${order.order.customer.id}
 												</div>
 											</div>
 										</div>
@@ -211,8 +228,8 @@
 												<div class="u-price"
 													style="font-weight: 700; font-size: 1rem;">
 													<a class="u-product-title-link"
-														href="order/orderdetail/${order.order.id}.htm">Xem chi
-														tiết</a>
+														href="emorder/orderdetail/${order.order.id}.htm">Xem
+														chi tiết</a>
 												</div>
 											</div>
 										</div>
@@ -246,7 +263,7 @@
 	border: 1px solid #ccc;
 	border-radius: 4px;
 	width: 100%;
-	max-width: 250px; /* Giới hạn chiều rộng của input */
+	max-width: 160px; /* Giới hạn chiều rộng của input */
 	box-sizing: border-box;
 }
 
@@ -275,18 +292,18 @@ label {
 
 /* Nút hủy */
 .clear-date-button {
-	padding: 8px 12px;
-	font-size: 14px;
-	background-color: #f44336; /* Màu đỏ */
-	color: #fff;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	transition: background-color 0.3s;
+    padding: 8px 12px;
+    font-size: 14px;
+    background-color: #f44336; /* Màu đỏ */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .clear-date-button:hover {
-	background-color: #d32f2f; /* Màu đỏ đậm hơn khi hover */
+    background-color: #d32f2f; /* Màu đỏ đậm hơn khi hover */
 }
 
 .custom-dropdown #custom-dropdown-menu {
@@ -1025,5 +1042,5 @@ body {
 	<jsp:include page="/WEB-INF/views/layout/footer.jsp" />
 
 </body>
-<script src="js/orderDetail.js"></script>
+<script src="js/employee/orderDetail.js"></script>
 </html>

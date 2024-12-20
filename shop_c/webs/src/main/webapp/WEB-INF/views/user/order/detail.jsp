@@ -103,8 +103,14 @@
 						<p class="left">
 							<strong>Địa chỉ: </strong>${order.address}</p>
 						<p class="right">
-							<c:if test="${y}">
-								<strong>Lý do hủy đơn: </strong>${order.reason.name}</c:if>
+							<c:choose>
+								<c:when test="${y && order.reason.id > 5}">
+									<strong>Lý do hủy đơn từ người bán: </strong>${order.reason.name}
+								</c:when>
+								<c:when test="${y && order.reason.id <= 6}">
+									<strong>Lý do hủy đơn từ khách hàng: </strong>${order.reason.name}
+								</c:when>
+							</c:choose>
 						</p>
 					</div>
 					<table class="u-table-entity u-block-90d4-12">
@@ -308,9 +314,9 @@
 						<c:choose>
 							<c:when test="${order.orderStatus.id == 1}">
 								<div style="display: ruby;">
-									<a href="payment/${order.id}.htm"
-										class="u-btn u-btn-round u-button-style u-radius u-btn-1">Thanh
-										toán</a>
+									<button
+										class="u-btn u-btn-round u-button-style u-radius u-btn-1"
+										onclick="openPaymentModal(${order.id})">Thanh toán</button>
 									<button
 										class="u-btn u-btn-round u-button-style u-radius u-btn-1"
 										style="background-color: red;"
@@ -326,9 +332,9 @@
 							<c:when test="${order.orderStatus.id == 2}">
 								<div style="display: ruby;">
 									<c:if test="${order.paymentStatus == 0}">
-										<a href="payment/${order.id}.htm"
-											class="u-btn u-btn-round u-button-style u-radius u-btn-1">Thanh
-											toán VNPay</a>
+										<button
+											class="u-btn u-btn-round u-button-style u-radius u-btn-1"
+											onclick="openPaymentModal(${order.id})">Thanh toán</button>
 									</c:if>
 									<button
 										class="u-btn u-btn-round u-button-style u-radius u-btn-1"
@@ -359,6 +365,26 @@
 								<button onclick="confirmCancel()" class="confirm-btn">Xác
 									nhận</button>
 								<button onclick="closeCancelModal()" class="cancel-btn">Hủy</button>
+							</div>
+						</div>
+					</div>
+					<div id="paymentModal" class="modal" style="display: none;">
+						<div class="modal-content">
+							<h3 style="font-size: 2rem;">Chọn phương thức thanh toán</h3>
+							<div class="payments-container">
+								<ul id="paymentMethod">
+									<c:forEach var="paymentMethod" items="${paymentMethods}">
+										<li><input type="radio" name="method"
+											value="${paymentMethod.id}" id="method${paymentMethod.id}">
+											<label for="method${paymentMethod.id}">${paymentMethod.name}</label>
+										</li>
+									</c:forEach>
+								</ul>
+							</div>
+							<div class="modal-actions">
+								<button onclick="confirmPayment()" class="confirm-btn">Xác
+									nhận</button>
+								<button onclick="closePaymentModal()" class="cancel-btn">Hủy</button>
 							</div>
 						</div>
 					</div>
@@ -413,6 +439,30 @@
 }
 
 .reasons-container input[type="radio"] {
+	margin-right: 10px;
+}
+
+/* Payments container styling */
+.payments-container {
+	margin: 20px 0;
+	max-height: 200px;
+	overflow-y: auto;
+	padding-right: 10px;
+}
+
+.payments-container ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.payments-container li {
+	display: flex;
+	align-items: center;
+	margin: 10px 0;
+}
+
+.payments-container input[type="radio"] {
 	margin-right: 10px;
 }
 

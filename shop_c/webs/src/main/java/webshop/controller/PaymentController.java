@@ -16,12 +16,15 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.UUID;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.codec.digest.HmacUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -36,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 
 import webshop.dao.AccountDAO;
@@ -54,10 +58,13 @@ import webshop.entity.Order;
 import webshop.entity.OrderDetail;
 import webshop.entity.OrderDetailId;
 import webshop.entity.OrderStatus;
+import webshop.entity.PaymentMethod;
 import webshop.entity.Product;
 import webshop.entity.ProductDetail;
-import webshop.paymentMethod.Config;
-import webshop.paymentMethod.PaymentService;
+import webshop.paymentMethod.VNPayConfig;
+import webshop.paymentMethod.VNPayService;
+import webshop.paymentMethod.ZaloPayConfig;
+import webshop.paymentMethod.ZaloPayService;
 
 @Controller
 @RequestMapping(value = "payment")
@@ -144,7 +151,7 @@ public class PaymentController {
 		return "payment/index";
 	}
 
-	@RequestMapping(value = "/repurchase/{idOrder}", method = RequestMethod.GET)
+	@RequestMapping(value = "repurchase/{idOrder}", method = RequestMethod.GET)
 	public String repurchase(@PathVariable("idOrder") Integer idOrder, HttpSession session, ModelMap model) {
 		String email = (String) session.getAttribute("user");
 		if (email == null) {
@@ -207,7 +214,7 @@ public class PaymentController {
 		return "payment/index";
 	}
 
-	@RequestMapping(value = "/result", method = RequestMethod.POST)
+	@RequestMapping(value = "result", method = RequestMethod.POST)
 	public String cash(@RequestParam("phone") String phone, @RequestParam("name") String name,
 			@RequestParam("address") String address, @RequestParam("note") String note,
 			@RequestParam("paymentMethod") int paymentMethod, Model model, HttpSession session) {
@@ -289,13 +296,12 @@ public class PaymentController {
 
 		session.removeAttribute("selectedCartIds");
 
-		model.addAttribute("message", "Đặt hàng thành công!!!");
-		model.addAttribute("newOrderId", order.getId());
+		session.setAttribute("idOrderResult", order.getId());
 
-		return "payment/success";
+		return "redirect:/payment/result.htm";
 	}
 
-	@RequestMapping(value = "/repurchase/{idOrder}", method = RequestMethod.POST)
+	@RequestMapping(value = "repurchase/{idOrder}", method = RequestMethod.POST)
 	public String cash(@PathVariable("idOrder") Integer idOrder, @RequestParam("phone") String phone,
 			@RequestParam("name") String name, @RequestParam("address") String address,
 			@RequestParam("note") String note, @RequestParam("paymentMethod") int paymentMethod, Model model,
@@ -365,18 +371,30 @@ public class PaymentController {
 		customer.setPhone(phone);
 		customerDAO.updateCustomer(customer);
 
-		model.addAttribute("message", "Đặt hàng thành công!!!");
-		model.addAttribute("newOrderId", order.getId());
+		session.setAttribute("idOrderResult", order.getId());
 
-		return "payment/success";
+		return "redirect:/payment/result.htm";
+	}
+
+	@RequestMapping(value = "result", method = RequestMethod.GET)
+	public String vnpay(HttpServletRequest request, Model model, HttpSession session) {
+		Integer idOrderResult = (Integer) session.getAttribute("idOrderResult");
+		if (idOrderResult == null) {
+			return "redirect:/home.htm";
+		}
+		// Khởi tạo Map để lưu các tham số
+		model.addAttribute("message", "Đặt hàng thành công!!!");
+		model.addAttribute("idOrderResult", idOrderResult);
+
+		return "payment/success"; // Trả về trang kết quả
 	}
 
 	@Autowired
-	private PaymentService paymentService;
+	private VNPayService paymentService;
 	@Autowired
-	private Config config;
+	private VNPayConfig config;
 
-	@RequestMapping(value = "/vnpay", method = RequestMethod.GET)
+	@RequestMapping(value = "vnpay", method = RequestMethod.GET)
 	public String vnpay(@RequestParam("phone") String phone, @RequestParam("name") String name,
 			@RequestParam("totalAmount") long totalAmount, @RequestParam("address") String address,
 			@RequestParam("note") String note, @RequestParam("paymentMethod") int paymentMethod, HttpSession session,
@@ -385,7 +403,7 @@ public class PaymentController {
 
 		try {
 			// Gọi service tạo URL thanh toán
-			JsonObject paymentResponse = paymentService.createPayment(request, totalAmount, "", language);
+			JsonObject paymentResponse = paymentService.createPayment(request, (totalAmount + 16000), "", language);
 
 			// Kiểm tra kết quả trả về
 			if (paymentResponse != null && "00".equals(paymentResponse.get("code").getAsString())) {
@@ -399,7 +417,7 @@ public class PaymentController {
 				List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
 
 				if (selectedCartIds.isEmpty()) {
-					throw new IllegalArgumentException("No cart items selected");
+					return "redirect:/home.htm";
 				}
 
 				Set<OrderDetail> orderDetails = new HashSet<>();
@@ -483,7 +501,7 @@ public class PaymentController {
 		}
 	}
 
-	@RequestMapping(value = "/repurchase/vnpay/{idOrder}", method = RequestMethod.GET)
+	@RequestMapping(value = "repurchase/vnpay/{idOrder}", method = RequestMethod.GET)
 	public String vnpay(@PathVariable("idOrder") Integer idOrder, @RequestParam("phone") String phone,
 			@RequestParam("name") String name, @RequestParam("totalAmount") long totalAmount,
 			@RequestParam("address") String address, @RequestParam("note") String note,
@@ -493,10 +511,12 @@ public class PaymentController {
 		String email = (String) session.getAttribute("user");
 		if (email == null) {
 			return "redirect:/login.htm";
-		}
-		if (idOrder == null) {
+		} else if (idOrder == null) {
+			return "redirect:/home.htm";
+		}else if(paymentMethod != 2) {
 			return "redirect:/home.htm";
 		}
+		
 		Order order = orderDAO.getOrderById(idOrder);
 		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
 
@@ -509,7 +529,7 @@ public class PaymentController {
 
 		try {
 			// Gọi service tạo URL thanh toán
-			JsonObject paymentResponse = paymentService.createPayment(request, totalAmount, "", language);
+			JsonObject paymentResponse = paymentService.createPayment(request, (totalAmount + 16000), "", language);
 
 			// Kiểm tra kết quả trả về
 			if (paymentResponse != null && "00".equals(paymentResponse.get("code").getAsString())) {
@@ -579,8 +599,8 @@ public class PaymentController {
 		}
 	}
 
-	@RequestMapping(value = "/{idOrder}", method = RequestMethod.GET)
-	public String repayment(@PathVariable("idOrder") Integer idOrder, HttpSession session, HttpServletRequest request,
+	@RequestMapping(value = "vnpay/{idOrder}", method = RequestMethod.GET)
+	public String revnpay(@PathVariable("idOrder") Integer idOrder, HttpSession session, HttpServletRequest request,
 			Model model) {
 		String language = "vn";
 		String email = (String) session.getAttribute("user");
@@ -591,7 +611,8 @@ public class PaymentController {
 			return "redirect:/home.htm";
 		}
 		Order order = orderDAO.getOrderById(idOrder);
-		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2 && order.getPaymentStatus() == 1)) {
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2
+				&& order.getPaymentStatus() == 1)) {
 			return "redirect:/home.htm";
 		}
 		long totalAmount = (long) order.getTotal();
@@ -622,11 +643,50 @@ public class PaymentController {
 		}
 	}
 
-	@RequestMapping(value = "/result", method = RequestMethod.GET)
+	@RequestMapping(value = "{idOrder}", method = RequestMethod.GET)
+	public String repayment(@RequestParam("idPaymentMethod") Integer idPaymentMethod,
+			@PathVariable("idOrder") Integer idOrder, HttpSession session, HttpServletRequest request, Model model) {
+
+		String email = (String) session.getAttribute("user");
+		if (email == null) {
+			return "redirect:/login.htm";
+		}
+		if (idOrder == null || idPaymentMethod == null) {
+			return "redirect:/home.htm";
+		}
+		Order order = orderDAO.getOrderById(idOrder);
+		PaymentMethod paymentMethod = paymentMethodDAO.getPaymentMethodById(idPaymentMethod);
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2
+				&& order.getPaymentStatus() == 1) || paymentMethod == null) {
+			return "redirect:/home.htm";
+		}
+
+		if (paymentMethod.getId() == 1) {
+			Date currentDate = new Date();
+
+			order.setPaymentMethod(paymentMethod);
+			order.setOrderStatus(orderStatusDAO.getOrderStatusById(2));
+			order.setUpdateTime(currentDate);
+			orderDAO.updateOrder(order);
+
+			return "redirect:/order/orderdetail/" + order.getId() + ".htm";
+		} else if (paymentMethod.getId() == 2) {
+			return "redirect:/payment/vnpay/" + order.getId() + ".htm";
+		} else if (paymentMethod.getId() == 3) {
+			return "redirect:/payment/zalopay/" + order.getId() + ".htm";
+		}
+
+		return "redirect:/home.htm";
+	}
+
+	@RequestMapping(value = "result/vnpay", method = RequestMethod.GET)
 	public String vnpay(@RequestParam("vnp_Amount") double vnp_Amount,
 			@RequestParam("vnp_TransactionStatus") String vnp_TransactionStatus, HttpServletRequest request,
 			Model model, HttpSession session) {
-		int newOrderId = (int) session.getAttribute("newOrderId");
+		Integer newOrderId = (int) session.getAttribute("newOrderId");
+		if (newOrderId == null) {
+			return "redirect:/home.htm";
+		}
 		// Khởi tạo Map để lưu các tham số
 		Map<String, String> fields = new HashMap<>();
 
@@ -655,7 +715,7 @@ public class PaymentController {
 		fields.remove("vnp_SecureHash");
 
 		// Tạo chữ ký từ các tham số
-		String signValue = Config.hashAllFields(fields);
+		String signValue = VNPayConfig.hashAllFields(fields);
 
 		// So sánh chữ ký đã tạo với vnp_SecureHash nhận được
 		if (signValue.equals(vnp_SecureHash)) {
@@ -684,4 +744,339 @@ public class PaymentController {
 		return "payment/result"; // Trả về trang kết quả
 	}
 
+	@Autowired
+	ZaloPayService zaloPayService;
+
+	@RequestMapping(value = "zalopay", method = RequestMethod.GET)
+	public String zalopay(@RequestParam("phone") String phone, @RequestParam("name") String name,
+			@RequestParam("totalAmount") long totalAmount, @RequestParam("address") String address,
+			@RequestParam("note") String note, @RequestParam("paymentMethod") int paymentMethod, HttpSession session,
+			HttpServletRequest request, Model model) {
+
+		String email = (String) session.getAttribute("user");
+		if (email == null) {
+			return "redirect:/login.htm";
+		}
+
+		// Tạo thông tin thanh toán
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd");
+		String currentDate = dateFormat.format(new Date());
+		String appTransId = currentDate + "_" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+		String description;
+		if (note == null || note.equals("")) {
+			description = "ZaloPay DEMO";
+		} else {
+			description = note;
+		}
+
+		// Gọi ZaloPayService để tạo đơn hàng
+		String response = zaloPayService.createOrder(appTransId, String.valueOf(totalAmount +16000), description);
+		try {
+
+			Account account = accountDAO.getAccountByEmail(email);
+			Customer customer = customerDAO.getCustomerById(account.getId());
+
+			Date currentDate1 = new Date();
+
+			List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
+
+			if (selectedCartIds.isEmpty()) {
+				return "redirect:/home.htm";
+			}
+
+			Set<OrderDetail> orderDetails = new HashSet<>();
+
+			for (int idCart : selectedCartIds) {
+
+				Cart cart = cartDAO.getCartById(idCart);
+				if (cart == null || cart.getProductDetail() == null) {
+					throw new IllegalStateException("Invalid cart or product detail");
+				}
+
+				OrderDetail orderDetail = new OrderDetail();
+				ProductDetail productDetail = cart.getProductDetail();
+
+				OrderDetailId orderDetailId = new OrderDetailId();
+				orderDetailId.setOrdersID(0);
+				orderDetailId.setProduct_detailsID(productDetail.getId());
+				orderDetail.setId(orderDetailId);
+
+				orderDetail.setQuantity(cart.getQuantity());
+				if (productDetail.getQuantity() < cart.getQuantity()) {
+					model.addAttribute("message", "Xin lỗi số lượng hàng không đủ!!!");
+					return "payment/success";
+				}
+				productDetail.setQuantity(productDetail.getQuantity() - cart.getQuantity());
+				productDetailDAO.updateProductDetail(productDetail);
+				orderDetail.setUnitPrice(cart.getTotalPrice() / cart.getQuantity());
+				orderDetail.setProductDetail(productDetail);
+
+				cartDAO.deleteCart(cart.getID());
+
+				orderDetails.add(orderDetail);
+			}
+
+			Order order = new Order();
+			order.setAddress(address);
+			order.setCreateTime(currentDate1);
+			order.setUpdateTime(currentDate1);
+			order.setPaymentStatus(0);
+			order.setCustomer(customer);
+			order.setDescription(note);
+			order.setOrderStatus(orderStatusDAO.getOrderStatusById(1));
+			order.setPaymentMethod(paymentMethodDAO.getPaymentMethodById(paymentMethod));
+			order.setProductFee(totalAmount);
+			order.setShipFee(16000);
+			order.setTotal(totalAmount + 16000);
+
+			orderDAO.addOrder(order);
+
+			for (OrderDetail detail : orderDetails) {
+				detail.getId().setOrdersID(order.getId());
+				orderDetailDAO.addOrderDetail(detail);
+			}
+
+			order.setOrderDetails(orderDetails);
+			orderDAO.updateOrder(order);
+
+			customer.setName(name);
+			customer.setPhone(phone);
+			customerDAO.updateCustomer(customer);
+
+			session.removeAttribute("selectedCartIds");
+
+			session.setAttribute("newOrderId", order.getId());
+
+			// Parse chuỗi JSON thành Map
+			ObjectMapper objectMapper = new ObjectMapper();
+			Map<String, Object> paymentResponse = objectMapper.readValue(response, Map.class);
+
+			// Kiểm tra nếu response trả về một URL thanh toán
+			if (paymentResponse.containsKey("order_url")) {
+				// Nếu có URL thanh toán, chuyển hướng người dùng
+				String paymentUrl = (String) paymentResponse.get("order_url");
+				return "redirect:" + paymentUrl; // Redirect đến URL thanh toán
+			} else {
+				// Nếu không có URL thanh toán, hiển thị lỗi hoặc thông báo khác
+				model.addAttribute("error", "Lỗi khi tạo đơn hàng thanh toán.");
+				return "payment/zaloPayResult"; // Trở về trang kết quả thanh toán
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			model.addAttribute("error", "Có lỗi xảy ra khi tạo đơn hàng.");
+			return "payment/zaloPayResult"; // Trở về trang kết quả thanh toán
+		}
+	}
+
+	@RequestMapping(value = "repurchase/zalopay/{idOrder}", method = RequestMethod.GET)
+	public String zalopay(@PathVariable("idOrder") Integer idOrder, @RequestParam("phone") String phone,
+			@RequestParam("name") String name, @RequestParam("totalAmount") long totalAmount,
+			@RequestParam("address") String address, @RequestParam("note") String note,
+			@RequestParam("paymentMethod") int paymentMethod, HttpSession session, HttpServletRequest request,
+			Model model) {
+
+		String email = (String) session.getAttribute("user");
+		if (email == null) {
+			return "redirect:/login.htm";
+		} else if (idOrder == null) {
+			return "redirect:/home.htm";
+		}else if(paymentMethod != 3) {
+			return "redirect:/home.htm";
+		}
+		Order order = orderDAO.getOrderById(idOrder);
+		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
+
+		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)) {
+			return "redirect:/home.htm";
+		}
+
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerById(account.getId());
+
+		// Tạo thông tin thanh toán
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd");
+		String currentDate = dateFormat.format(new Date());
+		String appTransId = currentDate + "_" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+		String description;
+		if (note == null || note.equals("")) {
+			description = "ZaloPay DEMO";
+		} else {
+			description = note;
+		}
+
+		// Gọi ZaloPayService để tạo đơn hàng
+		String response = zaloPayService.createOrder(appTransId, String.valueOf(totalAmount + 16000), description);
+		try {
+
+			Date currentDate1 = new Date();
+
+			Set<OrderDetail> setOrderDetails = new HashSet<>();
+
+			for (OrderDetail orderDetail : orderDetails) {
+				ProductDetail productDetail = orderDetail.getProductDetail();
+
+				OrderDetailId orderDetailId = new OrderDetailId();
+
+				if (productDetail.getQuantity() < orderDetail.getQuantity()) {
+					model.addAttribute("message", "Xin lỗi số lượng hàng không đủ!!!");
+					return "payment/success";
+				}
+				productDetail.setQuantity(productDetail.getQuantity() - orderDetail.getQuantity());
+				productDetailDAO.updateProductDetail(productDetail);
+
+				setOrderDetails.add(orderDetail);
+			}
+
+			order.setAddress(address);
+			order.setCreateTime(currentDate1);
+			order.setUpdateTime(currentDate1);
+			order.setPaymentStatus(0);
+			order.setCustomer(customer);
+			order.setDescription(note);
+			order.setOrderStatus(orderStatusDAO.getOrderStatusById(1));
+			order.setPaymentMethod(paymentMethodDAO.getPaymentMethodById(paymentMethod));
+			order.setProductFee(totalAmount);
+			order.setShipFee(16000);
+			order.setTotal(totalAmount + 16000);
+
+			orderDAO.addOrder(order);
+
+			for (OrderDetail orderDetail : orderDetails) {
+				orderDetail.getId().setOrdersID(order.getId());
+				orderDetailDAO.addOrderDetail(orderDetail);
+			}
+
+			order.setOrderDetails(setOrderDetails);
+			orderDAO.updateOrder(order);
+
+			customer.setName(name);
+			customer.setPhone(phone);
+			customerDAO.updateCustomer(customer);
+
+			session.setAttribute("newOrderId", order.getId());
+
+			// Parse chuỗi JSON thành Map
+			ObjectMapper objectMapper = new ObjectMapper();
+			Map<String, Object> paymentResponse = objectMapper.readValue(response, Map.class);
+
+			// Kiểm tra nếu response trả về một URL thanh toán
+			if (paymentResponse.containsKey("order_url")) {
+				// Nếu có URL thanh toán, chuyển hướng người dùng
+				String paymentUrl = (String) paymentResponse.get("order_url");
+				return "redirect:" + paymentUrl; // Redirect đến URL thanh toán
+			} else {
+				// Nếu không có URL thanh toán, hiển thị lỗi hoặc thông báo khác
+				model.addAttribute("error", "Lỗi khi tạo đơn hàng thanh toán.");
+				return "payment/zaloPayResult"; // Trở về trang kết quả thanh toán
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			model.addAttribute("error", "Có lỗi xảy ra khi tạo đơn hàng.");
+			return "payment/zaloPayResult"; // Trở về trang kết quả thanh toán
+		}
+	}
+
+	@RequestMapping(value = "zalopay/{idOrder}", method = RequestMethod.GET)
+	public String rezalopay(@PathVariable("idOrder") Integer idOrder, HttpSession session, HttpServletRequest request,
+			Model model) {
+
+		String email = (String) session.getAttribute("user");
+		if (email == null) {
+			return "redirect:/login.htm";
+		}
+		if (idOrder == null) {
+			return "redirect:/home.htm";
+		}
+		Order order = orderDAO.getOrderById(idOrder);
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2
+				&& order.getPaymentStatus() == 1)) {
+			return "redirect:/home.htm";
+		}
+
+		// Tạo thông tin thanh toán
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd");
+		String currentDate = dateFormat.format(new Date());
+		String appTransId = currentDate + "_" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+		String description;
+		if (order.getDescription() == null || order.getDescription().equals("")) {
+			description = "ZaloPay DEMO";
+		} else {
+			description = order.getDescription();
+		}
+		long total = (long) order.getTotal();
+
+		// Gọi ZaloPayService để tạo đơn hàng
+		String response = zaloPayService.createOrder(appTransId, String.valueOf(total), description);
+		try {
+			session.setAttribute("newOrderId", order.getId());
+
+			// Parse chuỗi JSON thành Map
+			ObjectMapper objectMapper = new ObjectMapper();
+			Map<String, Object> paymentResponse = objectMapper.readValue(response, Map.class);
+
+			// Kiểm tra nếu response trả về một URL thanh toán
+			if (paymentResponse.containsKey("order_url")) {
+				// Nếu có URL thanh toán, chuyển hướng người dùng
+				String paymentUrl = (String) paymentResponse.get("order_url");
+				return "redirect:" + paymentUrl; // Redirect đến URL thanh toán
+			} else {
+				// Nếu không có URL thanh toán, hiển thị lỗi hoặc thông báo khác
+				model.addAttribute("error", "Lỗi khi tạo đơn hàng thanh toán.");
+				return "payment/zaloPayResult"; // Trở về trang kết quả thanh toán
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			model.addAttribute("error", "Có lỗi xảy ra khi tạo đơn hàng.");
+			return "payment/zaloPayResult"; // Trở về trang kết quả thanh toán
+		}
+	}
+
+	@RequestMapping(value = "zalopay/result.htm", method = RequestMethod.GET)
+	public String handleZaloPayResult(@RequestParam("amount") String amount, @RequestParam("appid") String appid,
+			@RequestParam("apptransid") String appTransId, @RequestParam("bankcode") String bankCode,
+			@RequestParam("checksum") String checksum, @RequestParam("discountamount") String discountAmount,
+			@RequestParam("pmcid") String pmcid, @RequestParam("status") String status, HttpSession session,
+			HttpServletRequest request, Model model) {
+		Integer newOrderId = (int) session.getAttribute("newOrderId");
+		if (newOrderId == null) {
+			return "redirect:/home.htm";
+		}
+
+		try {
+
+			// Kiểm tra trạng thái thanh toán
+			boolean isPaymentSuccess = "1".equals(status); // status = 1 là thành công, -49 là thất bại
+
+			// Nếu trạng thái thanh toán thành công
+			if (isPaymentSuccess) {
+				Date currentDate = new Date();
+				Order order = orderDAO.getOrderById(newOrderId);
+				order.setPaymentStatus(1);
+				order.setPaymentMethod(paymentMethodDAO.getPaymentMethodById(3));
+				order.setOrderStatus(orderStatusDAO.getOrderStatusById(2));
+				order.setUpdateTime(currentDate);
+				orderDAO.updateOrder(order);
+
+				model.addAttribute("message", "Thanh toán thành công!");
+				model.addAttribute("amount", amount);
+				model.addAttribute("appTransId", appTransId);
+				model.addAttribute("bankCode", bankCode);
+				model.addAttribute("discountAmount", discountAmount);
+			} else {
+				model.addAttribute("message", "Thanh toán thất bại!");
+				model.addAttribute("error", "Lỗi: " + request.getParameter("status"));
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			model.addAttribute("message", "Có lỗi xảy ra trong quá trình xử lý!");
+		}
+
+		model.addAttribute("newOrderId", newOrderId);
+		session.removeAttribute("newOrderId");
+		return "payment/zaloPayResult"; // Trả về tên JSP để hiển thị kết quả
+	}
 }

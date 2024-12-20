@@ -2,6 +2,7 @@
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
 <!DOCTYPE html>
 <html style="font-size: 16px;">
 
@@ -11,10 +12,10 @@
 <meta name="keywords"
 	content="Product 1 Title, Product 2 Title, Product 3 Title">
 <meta name="description" content="">
-<title>Đơn hàng</title>
+<title>Chi tiết đơn hàng</title>
+<base href="${pageContext.servletContext.contextPath}/">
 <link rel="stylesheet" href="css/page.css" media="screen">
 </head>
-
 <body class="u-body u-xl-mode" data-style="shopping-cart-template-1"
 	data-posts=""
 	data-global-section-properties="{&quot;code&quot;:&quot;CART&quot;,&quot;colorings&quot;:{&quot;light&quot;:[&quot;clean&quot;,&quot;clean&quot;],&quot;colored&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;],&quot;dark&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;]},&quot;isPreset&quot;:true}"
@@ -23,7 +24,7 @@
 	data-page-coloring-types="{&quot;light&quot;:[&quot;clean&quot;,&quot;clean&quot;],&quot;colored&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;],&quot;dark&quot;:[&quot;clean&quot;,&quot;clean&quot;,&quot;clean&quot;]}"
 	data-page-category="&quot;Cart&quot;">
 
-	<jsp:include page="/WEB-INF/views/layout/header.jsp" />
+	<jsp:include page="/WEB-INF/views/layout/eheader.jsp" />
 
 	<section class="u-clearfix u-block-90d4-1"
 		custom-posts-hash="[T,[T,T],[[[I,T],[I,T],[I,T]],[],[],[]]]"
@@ -33,78 +34,111 @@
 		<div class="u-clearfix u-sheet u-block-90d4-2">
 
 			<div class="u-cart-button-container">
-				<a href="home.htm" style="position: absolute; margin-left: 45px"
+				<a href="emorder.htm"
 					class="u-active-none u-btn u-button-style u-cart-continue-shopping u-hover-none u-none u-text-body-color u-block-90d4-58"><span
 					class="u-icon u-block-90d4-59"><svg
 							xmlns="http://www.w3.org/2000/svg"
 							xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
 							xml:space="preserve" class="u-svg-content"
 							viewBox="0 0 443.52 443.52" x="0px" y="0px" data-color="#000000"
-							style="width: 1em; height: 1em">
-							<g>
-								<g>
-									<path
+							style="width: 1em; height: 1em;">
+                                <g>
+                                <g>
+                                <path
 								d="M143.492,221.863L336.226,29.129c6.663-6.664,6.663-17.468,0-24.132c-6.665-6.662-17.468-6.662-24.132,0l-204.8,204.8    c-6.662,6.664-6.662,17.468,0,24.132l204.8,204.8c6.78,6.548,17.584,6.36,24.132-0.42c6.387-6.614,6.387-17.099,0-23.712    L143.492,221.863z">
-									</path>
-								</g>
-							</g>
-						</svg></span>&nbsp;Quay lại </a>
+                                </path>
+                                </g>
+                                </g>
+                                </svg></span>&nbsp;Quay lại </a>
 
 				<h2
 					class=" gioHang u-align-center-lg u-align-center-md u-align-center-sm u-align-center-xs u-custom-font u-font-ubuntu u-text u-text-default u-text-1">
-					Đơn hàng</h2>
-
-				<div class="custom-dropdown u-align-center-xs">
-					<select name="options" id="custom-dropdown-menu">
-						<option value="0">Lọc trạng thái</option>
-						<option value="1">Chưa thanh toán</option>
-						<option value="2">Chờ lấy hàng</option>
-						<option value="3">Đang giao hàng</option>
-						<option value="4">Đã hoàn thành</option>
-						<option value="5">Đã hủy</option>
-					</select>
-				</div>
+					Chi tiết đơn hàng</h2>
 			</div>
-
-			<div class="custom-search-container">
-			    <label>Mã đơn hàng:</label> 
-			    <input id="idorder-search-input" class="custom-search-input" type="text" name="idordersearch" value="" placeholder="Nhập mã đơn hàng">
-			    			
-				<div class="date-range">
-					<label for="fromDate">Từ: </label> <input type="date" id="fromDate"
-						name="fromDate" class="custom-date-input" /> <label for="toDate">Đến:
-					</label> <input type="date" id="toDate" name="toDate"
-						class="custom-date-input" />
-					<button type="button" id="clear-date" class="clear-date-button">Hủy</button>
-				</div>
-			</div>
+			<c:set var="y" value="false" scope="page" />
 
 			<div class="u-cart u-expanded-width u-layout-grid u-block-90d4-6">
 				<div
 					class="u-cart-products-table u-table u-table-responsive u-block-90d4-7">
+					<div class="order-info">
+						<p class="left">
+							<strong>Mã đơn hàng: </strong>${order.id}</p>
+						<p class="center">
+							<strong>Ngày tạo: </strong>
+							<fmt:formatDate value="${order.createTime}"
+								pattern="dd/MM/yyyy HH:mm:ss" />
+						</p>
+						<p class="right">
+							<strong>Ngày cập nhật: </strong>
+							<fmt:formatDate value="${order.updateTime}"
+								pattern="dd/MM/yyyy HH:mm:ss" />
+						</p>
+					</div>
+					<div class="order-info">
+						<p class="left">
+							<strong>Hình thức thanh toán: </strong>${order.paymentMethod.name}
+						</p>
+						<p class="right">
+							<strong>Trạng thái: </strong> <span
+								style="
+						            <c:choose>
+						                <c:when test="${order.orderStatus.id == 1 || order.orderStatus.id == 5}">
+						                    color: red;
+						                    <c:if test="${order.orderStatus.id == 5}">
+						                    <c:set var="y" value="true" scope="page" /></c:if>
+						                </c:when>
+						                <c:when test="${order.orderStatus.id == 4}">
+						                    color: green;
+						                </c:when>
+						                <c:otherwise>
+						                    color: blue;
+						                </c:otherwise>
+						            </c:choose>
+						        ">
+								${order.orderStatus.statusName} </span>
+						</p>
+					</div>
+					<div class="order-info">
+						<p class="left">
+							<strong>Địa chỉ: </strong>${order.address}</p>
+						<p class="right">
+							<c:choose>
+								<c:when test="${y && order.reason.id > 5}">
+									<strong>Lý do hủy đơn từ người bán: </strong>${order.reason.name}
+								</c:when>
+								<c:when test="${y && order.reason.id <= 6}">
+									<strong>Lý do hủy đơn từ khách hàng: </strong>${order.reason.name}
+								</c:when>
+							</c:choose>
+						</p>
+					</div>
 					<table class="u-table-entity u-block-90d4-12">
 						<colgroup>
-							<col width="15%">
-							<col width="20%">
-							<col width="15%">
-							<col width="15%">
-							<col width="15%">
-							<col width="20%">
+							<col width="35%">
+							<col width="8%">
+							<col width="10%">
+							<col width="10%">
+							<col width="12.5%">
+							<col width="15.5%">
+							<col width="10%">
 						</colgroup>
 						<thead class="u-custom-color-1 u-table-header u-block-90d4-13">
 							<tr style="height: 33px;">
 								<th
-									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-14">Mã
-									đơn hàng</th>
+									class="u-border-3 u-border-grey-15 u-table-cell u-block-90d4-14">Sản
+									phẩm</th>
 								<th
-									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-12">Ngày
-									tạo</th>
+									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-12">Kích
+									cỡ</th>
 								<th
-									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-15">Tổng
-									số lượng</th>
+									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-15">Số
+									lượng</th>
 								<th
-									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-16">Tổng
-									tiền</th>
+									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-16">Đơn
+									giá</th>
+								<th
+									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-17">Tổng
+									giá</th>
 								<th
 									class="center u-border-3 u-border-grey-15 u-table-cell u-block-90d4-16">Trạng
 									thái</th>
@@ -116,9 +150,22 @@
 						<tbody
 							class="u-align-left u-table-alt-grey-5 u-table-body u-block-90d4-18">
 
+							<c:set var="x" value="true" scope="page" />
 							<!--Sản phẩm nè-->
-							<c:forEach var="order" items="${orders}">
-								<tr id="order${order.id}" style="height: 100px;">
+							<c:forEach var="orderDetail" items="${orderDetails}">
+								<tr style="height: 100px;">
+									<td
+										class="products-cart u-border-1 u-border-grey-15 u-table-cell u-block-90d4-41">
+										<img
+										class="u-cart-product-image u-image u-image-round u-preserve-proportions u-product-control u-radius-17 u-block-90d4-43"
+										src="images/products/${orderDetail.product.image}"
+										data-image-width="859" data-image-height="1908">
+										<h2
+											class="u-cart-product-title u-product-control u-text u-block-90d4-44">
+											<a class="u-product-title-link"
+												href="productinfo.htm?proid=${orderDetail.product.id}">${orderDetail.product.name}</a>
+										</h2>
+									</td>
 									<td
 										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-45">
 										<div
@@ -127,10 +174,19 @@
 												<div class="u-old-price"
 													style="text-decoration: line-through !important;"></div>
 												<div class="u-price"
-													style="font-weight: 700; font-size: 1rem;">
-													<a class="u-product-title-link"
-														href="order/orderdetail/${order.order.id}.htm">${order.order.id}</a>
-												</div>
+													style="font-weight: 700; font-size: 1rem;">${orderDetail.productDetail.size.id}</div>
+											</div>
+										</div>
+									</td>
+									<td
+										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-45">
+										<div
+											class="center u-cart-product-price u-product-control u-product-price u-block-90d4-46">
+											<div class="u-price-wrapper">
+												<div class="u-old-price"
+													style="text-decoration: line-through !important;"></div>
+												<div class="u-price"
+													style="font-weight: 700; font-size: 1rem;">${orderDetail.orderDetail.quantity}</div>
 											</div>
 										</div>
 									</td>
@@ -143,36 +199,9 @@
 													style="text-decoration: line-through !important;"></div>
 												<div class="u-price"
 													style="font-weight: 700; font-size: 1rem;">
-													<fmt:formatDate value="${order.order.createTime}"
-														pattern="dd/MM/yyyy HH:mm:ss" />
-												</div>
-											</div>
-										</div>
-									</td>
-									<td
-										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-45">
-										<div
-											class="center u-cart-product-price u-product-control u-product-price u-block-90d4-46">
-											<div class="u-price-wrapper">
-												<div class="u-old-price"
-													style="text-decoration: line-through !important;"></div>
-												<div class="u-price"
-													style="font-weight: 700; font-size: 1rem;">
-													${order.totalQuantity}</div>
-											</div>
-										</div>
-									</td>
-									<td
-										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-45">
-										<div
-											class="center u-cart-product-price u-product-control u-product-price u-block-90d4-46">
-											<div class="u-price-wrapper">
-												<div class="u-old-price"
-													style="text-decoration: line-through !important;"></div>
-												<div class="u-price"
-													style="font-weight: 700; font-size: 1rem;">
-													<fmt:formatNumber value="${order.order.total}"
-														type="number" groupingUsed="true" />
+													<fmt:formatNumber
+														value="${orderDetail.orderDetail.unitPrice}" type="number"
+														groupingUsed="true" />
 													₫
 												</div>
 											</div>
@@ -187,20 +216,37 @@
 													style="text-decoration: line-through !important;"></div>
 												<div class="u-price"
 													style="font-weight: 700; font-size: 1rem;">
-													${order.order.orderStatus.statusName}</div>
+													<fmt:formatNumber
+														value="${orderDetail.orderDetail.unitPrice * orderDetail.orderDetail.quantity}"
+														type="number" groupingUsed="true" />
+													₫
+												</div>
 											</div>
 										</div>
 									</td>
-									<%-- <td class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-50">
+									<td
+										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-50">
 										<div
 											class="center  u-cart-product-subtotal u-product-control u-product-price u-block-90d4-51">
 											<div class="u-price-wrapper">
 												<div class="u-old-price"
 													style="text-decoration: line-through !important;"></div>
-												<div class="u-price" style="font-weight: 400;">${detail.status}</div>
+												<div class="u-price"
+													style="font-weight: 700; font-size: 1rem;">
+													<c:choose>
+														<c:when
+															test="${orderDetail.orderDetail.quantity < orderDetail.productDetail.quantity}">
+															Vẫn còn hàng
+														</c:when>
+														<c:otherwise>
+															Không đủ hàng
+            												<c:set var="x" value="false" scope="page" />
+														</c:otherwise>
+													</c:choose>
+												</div>
 											</div>
 										</div>
-										</td> --%>
+									</td>
 									<td
 										class="center u-border-1 u-border-grey-15 u-table-cell u-block-90d4-45">
 										<div
@@ -211,8 +257,8 @@
 												<div class="u-price"
 													style="font-weight: 700; font-size: 1rem;">
 													<a class="u-product-title-link"
-														href="order/orderdetail/${order.order.id}.htm">Xem chi
-														tiết</a>
+														href="productinfo.htm?proid=${orderDetail.product.id}">Xem
+														chi tiết</a>
 												</div>
 											</div>
 										</div>
@@ -225,85 +271,254 @@
 					</table>
 				</div>
 				<div class="u-cart-blocks-container">
-					<div class="u-cart-block u-indent-30"></div>
+					<div class="u-cart-block u-indent-30">
+						<div class="order-info">
+							<p class="left">
+								<strong>Tổng tiền sản phẩm: </strong>
+								<fmt:formatNumber value="${order.productFee}" type="number"
+									groupingUsed="true" />
+								₫
+							</p>
+						</div>
+						<div class="order-info">
+							<p class="left">
+								<strong>Phí giao hàng: </strong>
+								<fmt:formatNumber value="${order.shipFee}" type="number"
+									groupingUsed="true" />
+								₫
+							</p>
+						</div>
+						<div class="order-info">
+							<p class="left">
+								<strong>Thành tiền: </strong>
+								<fmt:formatNumber value="${order.total}" type="number"
+									groupingUsed="true" />
+								₫
+							</p>
+						</div>
+						<div class="order-info">
+							<p class="left">
+								<strong>Ghi chú: </strong>
+								<c:choose>
+									<c:when
+										test="${not empty order.description || order.description != ''}">
+								${order.description}
+									</c:when>
+									<c:otherwise>
+									Không có.
+									</c:otherwise>
+								</c:choose>
+							</p>
+						</div>
+						<c:choose>
+							<c:when test="${order.orderStatus.id == 1}">
+								<div style="display: ruby;">
+									<button
+										class="u-btn u-btn-round u-button-style u-radius u-btn-1"
+										style="background-color: red;"
+										onclick="openCancelModal(${order.id})">Hủy đơn</button>
+								</div>
+							</c:when>
+							<c:when
+								test="${(order.orderStatus.id == 4 || order.orderStatus.id == 5) && x}">
+
+							</c:when>
+							<c:when test="${order.orderStatus.id == 2}">
+								<div style="display: ruby;">
+									<c:if
+										test="${order.paymentStatus == 1 || order.paymentMethod.id == 1}">
+										<a href="emorder/status/${order.id}.htm?status=3"
+											class="u-btn u-btn-round u-button-style u-radius u-btn-1">Xác
+											nhận giao hàng</a>
+									</c:if>
+									<button
+										class="u-btn u-btn-round u-button-style u-radius u-btn-1"
+										style="background-color: red;"
+										onclick="openCancelModal(${order.id})">Hủy đơn</button>
+								</div>
+							</c:when>
+							<c:otherwise>
+								<div style="display: ruby;">
+									<a href="emorder/status/${order.id}.htm?status=4"
+										class="u-btn u-btn-round u-button-style u-radius u-btn-1">Xác
+										nhận giao hàng thành công</a>
+								</div>
+							</c:otherwise>
+						</c:choose>
+
+						<!-- Modal for Cancellation Reason -->
+						<div id="cancelModal" class="modal" style="display: none;">
+							<div class="modal-content">
+								<h3>Chọn lý do hủy</h3>
+								<div class="reasons-container">
+									<ul id="cancelReasons">
+										<c:forEach var="cancelReason" items="${cancelReasons}">
+											<c:if test="${cancelReason.id > 5}">
+												<li><input type="radio" name="reason"
+													value="${cancelReason.id}" id="reason${cancelReason.id}">
+													<label for="reason${cancelReason.id}">${cancelReason.name}</label>
+												</li>
+											</c:if>
+										</c:forEach>
+									</ul>
+								</div>
+								<div class="modal-actions">
+									<button onclick="confirmCancel()" class="confirm-btn">Xác
+										nhận</button>
+									<button onclick="closeCancelModal()" class="cancel-btn">Hủy</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="u-cart-block u-indent-30">
+						<div id="idCustomer" class="order-info">
+							<p class="left">
+								<strong>Mã khách hàng: </strong>${order.customer.id}
+							</p>
+						</div>
+						<div class="order-info">
+							<p class="left">
+								<strong>Tên khách hàng: </strong>${order.customer.name}
+							</p>
+						</div>
+						<div class="order-info">
+							<p class="left">
+								<strong>Mail khách hàng: </strong>${order.customer.account.email}
+							</p>
+						</div>
+						<div class="order-info">
+							<p class="left">
+								<strong>Số điện thoại: </strong>${order.customer.phone}
+							</p>
+						</div>
+					</div>
 
 				</div>
-				<style>
-/* Container chính để bao bọc các input */
-.custom-search-container {
-	margin: 0px 0px 10px 47px;
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 10px;
-	justify-content: flex-start;
-}
-
-/* Input tìm kiếm */
-.custom-search-input {
-	padding: 8px 12px;
-	font-size: 14px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
+			</div>
+		</div>
+		<script src="js/employee/orderDetail.js"></script>
+		<style>
+/* Modal container */
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
 	width: 100%;
-	max-width: 250px; /* Giới hạn chiều rộng của input */
-	box-sizing: border-box;
-}
-
-/* Phần chứa các input date */
-.date-range {
-	margin: 0px 0px 0px 50px;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.6);
 	display: flex;
-	gap: 10px;
+	justify-content: center;
 	align-items: center;
+	z-index: 1000;
 }
 
-/* Input ngày */
-.custom-date-input {
-	width: 40%;
-	padding: 8px 10px;
-	font-size: 14px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
+/* Modal content box */
+.modal-content {
+	background: #ffffff;
+	padding: 30px;
+	border-radius: 12px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+	text-align: center;
+	width: 90%;
+	max-width: 500px;
+	animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Các nhãn */
-label {
-	font-size: 14px;
-	margin-right: 5px;
+/* Reasons container styling */
+.reasons-container {
+	margin: 20px 0;
+	max-height: 200px;
+	overflow-y: auto;
+	padding-right: 10px;
 }
 
-/* Nút hủy */
-.clear-date-button {
-	padding: 8px 12px;
-	font-size: 14px;
-	background-color: #f44336; /* Màu đỏ */
-	color: #fff;
+.reasons-container ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.reasons-container li {
+	display: flex;
+	align-items: center;
+	margin: 10px 0;
+}
+
+.reasons-container input[type="radio"] {
+	margin-right: 10px;
+}
+
+/* Modal action buttons */
+.modal-actions {
+	margin-top: 20px;
+}
+
+.confirm-btn, .cancel-btn {
+	padding: 10px 20px;
 	border: none;
-	border-radius: 4px;
+	border-radius: 8px;
+	font-size: 16px;
 	cursor: pointer;
-	transition: background-color 0.3s;
+	transition: background-color 0.3s ease;
 }
 
-.clear-date-button:hover {
-	background-color: #d32f2f; /* Màu đỏ đậm hơn khi hover */
+.confirm-btn {
+	background-color: #28a745;
+	color: #ffffff;
 }
 
-.custom-dropdown #custom-dropdown-menu {
-	margin: 20px 47px 0px 0px;
-	font-size: inherit;
-	padding: 5px;
-	border: 2px solid #333333;
-	border-radius: 5px;
-	background-color: #fff;
-	color: #333;
-	cursor: pointer;
-	outline: none;
+.confirm-btn:hover {
+	background-color: #218838;
 }
 
-.custom-dropdown #custom-dropdown-menu:focus {
-	border-color: #0056b3;
-	box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+.cancel-btn {
+	background-color: #dc3545;
+	color: #ffffff;
+	margin-left: 10px;
+}
+
+.cancel-btn:hover {
+	background-color: #c82333;
+}
+
+/* Smooth fade-in animation */
+@
+keyframes fadeIn {from { opacity:0;
+	transform: scale(0.9);
+}
+
+to {
+	opacity: 1;
+	transform: scale(1);
+}
+
+}
+.order-info {
+	display: flex; /* Kích hoạt Flexbox */
+	justify-content: space-between;
+	/* Đẩy các phần tử sang trái, giữa và phải */
+	align-items: center; /* Căn chỉnh các phần tử theo chiều dọc */
+	padding: 10px; /* Thêm khoảng cách nếu cần */
+}
+
+.order-info p {
+	margin: 0; /* Xóa margin mặc định của thẻ <p> */
+}
+
+.left {
+	text-align: left; /* Đảm bảo nội dung căn trái */
+	flex: 1; /* Chiếm không gian nếu cần */
+}
+
+.center {
+	text-align: center; /* Đảm bảo nội dung căn giữa */
+	flex: 1; /* Chiếm không gian nếu cần */
+}
+
+.right {
+	text-align: right; /* Đảm bảo nội dung căn phải */
+	flex: 1; /* Chiếm không gian nếu cần */
 }
 
 .u-cart {
@@ -430,7 +645,7 @@ body {
 	margin: 0;
 }
 </style>
-			</div>
+		</div>
 		</div>
 		<style data-mode="XL" data-visited="true">
 @media ( min-width : 1200px) {
@@ -1025,5 +1240,5 @@ body {
 	<jsp:include page="/WEB-INF/views/layout/footer.jsp" />
 
 </body>
-<script src="js/orderDetail.js"></script>
+
 </html>

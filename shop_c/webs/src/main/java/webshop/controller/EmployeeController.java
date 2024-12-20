@@ -1,6 +1,13 @@
 package webshop.controller;
+
 import java.io.File;
+import java.io.ObjectInputFilter.Status;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,62 +34,74 @@ import webshop.dao.OrderDetailDAO;
 import webshop.dao.OrderStatusDAO;
 import webshop.dao.ProductDAO;
 import webshop.dao.ProductDetailDAO;
+import webshop.dao.ReasonDAO;
 import webshop.dao.RuleDAO;
 import webshop.dao.BrandDAO;
 import webshop.dao.TypeDAO;
 import webshop.dao.SizeDAO;
 import webshop.dao.StaffDAO;
 import webshop.dao.OriginDAO;
+import webshop.dao.PaymentMethodDAO;
 import webshop.dao.MaterialDAO;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import webshop.entity.Account;
 import webshop.entity.Brand;
+import webshop.entity.Cart;
 import webshop.entity.Customer;
 import webshop.entity.Type;
 import webshop.security.JwtUtil;
 import webshop.security.Roles;
 import webshop.entity.Origin;
 import webshop.entity.Material;
+import webshop.entity.Order;
+import webshop.entity.OrderDetail;
+import webshop.entity.OrderStatus;
 import webshop.entity.Size;
 import webshop.entity.Staff;
 import webshop.entity.Product;
 
-
-
-
 @Controller
 public class EmployeeController {
 
-    
-    @Autowired
-    BrandDAO brand;
-    @Autowired
-    TypeDAO type;
-    @Autowired
-    OriginDAO origin;
-    @Autowired
-    MaterialDAO material;
-    @Autowired
-    SizeDAO size;
-    @Autowired
-    ProductDAO productDAO; // Ensure ProductDAO is injecte
-    @Autowired
+	@Autowired
+	BrandDAO brand;
+	@Autowired
+	TypeDAO type;
+	@Autowired
+	OriginDAO origin;
+	@Autowired
+	MaterialDAO material;
+	@Autowired
+	SizeDAO size;
+	@Autowired
+	ProductDAO productDAO; // Ensure ProductDAO is injecte
+	@Autowired
 	ProductDetailDAO prdd;
-    @Autowired
+	@Autowired
 	ProductDAO product;
-    @Autowired
+	@Autowired
 	AccountDAO accd;
 	@Autowired
 	StaffDAO stafd;
 	@Autowired
 	CustomerDAO cusd;
-	
+	@Autowired
+	PaymentMethodDAO paymentMethodDAO;
+	@Autowired
+	OrderDAO orderDAO;
+	@Autowired
+	OrderDetailDAO orderDetailDAO;
+	@Autowired
+	OrderStatusDAO orderStatusDAO;
+	@Autowired
+	ReasonDAO reasonDAO;
+	@Autowired
+	CartDAO cartDAO;
 
-    
-    @RequestMapping("emhome")
+	@RequestMapping("emhome")
 	public String homee(ModelMap model, HttpSession ses) {
-    	
+
 //    	if (ses == null || ses.getAttribute("jwtToken") == null) {
 //            return "redirect:home.htm";
 //        }
@@ -99,8 +118,8 @@ public class EmployeeController {
 
 		return "employee/home";
 	}
-    
-    @RequestMapping("emproduct")
+
+	@RequestMapping("emproduct")
 	public String emproduct(ModelMap model) {
 
 		List<Product> dsProduct = product.getAllProducts();
@@ -122,10 +141,8 @@ public class EmployeeController {
 
 		return "employee/qlproduct";
 	}
-    
-   
-    
-    @RequestMapping("empersonal")
+
+	@RequestMapping("empersonal")
 	public String personal(HttpServletRequest request, HttpSession session) {
 
 		if (session.getAttribute("user") == null) {
@@ -149,9 +166,8 @@ public class EmployeeController {
 
 		return "employee/personal";
 	}
- 
-    
-    @RequestMapping("emsearch")
+
+	@RequestMapping("emsearch")
 	public String search(@RequestParam(value = "emsearch", required = false) String search, ModelMap model) {
 
 		List<Product> dsProduct = product.getAllProducts(); // Lấy tất cả sản phẩm
@@ -181,222 +197,207 @@ public class EmployeeController {
 		return "employee/qlproduct";
 	}
 
+	@RequestMapping("emaddproduct")
+	public String home(ModelMap model) {
+		System.out.println("Thêm sản phẩm thành công: với GET ");
+		// Lấy các thông tin về loại sản phẩm, xuất xứ, thương hiệu và chất liệu
+		List<Type> dsTypes = type.getAllTypes(); // Lấy tất cả loại sản phẩm
+		List<Size> dsSizes = size.getAllSizes(); // Lấy tất cả kích thước
+		List<Origin> dsOrigins = origin.getAllOrigins(); // Lấy tất cả xuất xứ
+		List<Brand> dsBrands = brand.getAllBrands(); // Lấy tất cả thương hiệu
+		List<Material> dsMaterials = material.getAllMaterials(); // Lấy tất cả chất liệu
 
-    @RequestMapping("emaddproduct")
-    public String home(ModelMap model) {
-    	System.out.println("Thêm sản phẩm thành công: với GET ");
-        // Lấy các thông tin về loại sản phẩm, xuất xứ, thương hiệu và chất liệu
-        List<Type> dsTypes = type.getAllTypes(); // Lấy tất cả loại sản phẩm
-        List<Size> dsSizes = size.getAllSizes(); // Lấy tất cả kích thước
-        List<Origin> dsOrigins = origin.getAllOrigins(); // Lấy tất cả xuất xứ
-        List<Brand> dsBrands = brand.getAllBrands(); // Lấy tất cả thương hiệu
-        List<Material> dsMaterials = material.getAllMaterials(); // Lấy tất cả chất liệu
+		// Thêm các thông tin vào model
+		model.addAttribute("types", dsTypes);
+		model.addAttribute("sizes", dsSizes);
+		model.addAttribute("origins", dsOrigins);
+		model.addAttribute("brands", dsBrands);
+		model.addAttribute("materials", dsMaterials);
 
-        // Thêm các thông tin vào model
-        model.addAttribute("types", dsTypes);
-        model.addAttribute("sizes", dsSizes);
-        model.addAttribute("origins", dsOrigins);
-        model.addAttribute("brands", dsBrands);
-        model.addAttribute("materials", dsMaterials);
-        
-     
+		// Xử lý thêm logic để lưu sản phẩm vào cơ sở dữ liệu
 
+		// Trả về trang addproduct nếu không có lỗi
+		return "employee/addproduct";
+	}
 
-        // Xử lý thêm logic để lưu sản phẩm vào cơ sở dữ liệu
+	@RequestMapping(value = "emaddproduct", method = RequestMethod.POST)
+	public String addProduct(HttpServletRequest request, Model model,
+			@RequestParam(value = "file", required = false) MultipartFile file) {
 
-        // Trả về trang addproduct nếu không có lỗi
-        return "employee/addproduct";
-    }
-    
+		System.out.println("Thêm sản phẩm thành công: với POST ");
 
-    @RequestMapping(value = "emaddproduct", method = RequestMethod.POST)
-    public String addProduct(HttpServletRequest request, Model model,
-    		@RequestParam(value = "file", required = false) MultipartFile file
-    		) {
-    	
-        System.out.println("Thêm sản phẩm thành công: với POST ");
+		// Lấy các thông tin từ form
+		String name = request.getParameter("name");
+		String description = request.getParameter("description");
 
-        // Lấy các thông tin từ form
-        String name = request.getParameter("name");
-        String description = request.getParameter("description");
-        
-        String image = request.getParameter("image"); // Lấy tên file từ form
-        String typesID = request.getParameter("typesID");
-        String originsID = request.getParameter("originsID");
-        String brandsID = request.getParameter("brandsID");
-        String materialsID = request.getParameter("materialsID");
-        
-        // Debug: Kiểm tra giá trị lấy được
-        System.out.println("Tên sản phẩm: " + name);
-        System.out.println("Mô tả sản phẩm: " + description);
-        System.out.println("Tên file ảnh: " + image);
-        System.out.println("Loại sản phẩm (ID): " + typesID);
-        System.out.println("Xuất xứ (ID): " + originsID);
-        System.out.println("Thương hiệu (ID): " + brandsID);
-        System.out.println("Chất liệu (ID): " + materialsID);
+		String image = request.getParameter("image"); // Lấy tên file từ form
+		String typesID = request.getParameter("typesID");
+		String originsID = request.getParameter("originsID");
+		String brandsID = request.getParameter("brandsID");
+		String materialsID = request.getParameter("materialsID");
 
-        // Tạo đối tượng từ ID
-        Type type = new Type();
-        type.setId(Integer.parseInt(typesID));
-        
-      
-        Origin origin = new Origin();
-        origin.setId(Integer.parseInt(originsID));
+		// Debug: Kiểm tra giá trị lấy được
+		System.out.println("Tên sản phẩm: " + name);
+		System.out.println("Mô tả sản phẩm: " + description);
+		System.out.println("Tên file ảnh: " + image);
+		System.out.println("Loại sản phẩm (ID): " + typesID);
+		System.out.println("Xuất xứ (ID): " + originsID);
+		System.out.println("Thương hiệu (ID): " + brandsID);
+		System.out.println("Chất liệu (ID): " + materialsID);
 
-        Brand brand = new Brand();
-        brand.setId(Integer.parseInt(brandsID));
+		// Tạo đối tượng từ ID
+		Type type = new Type();
+		type.setId(Integer.parseInt(typesID));
 
-        Material material = new Material();
-        material.setId(Integer.parseInt(materialsID));
-        
-        String fileName ="";
-        
-        if (file != null && !file.isEmpty()) {
-	        try {
-	            fileName = file.getOriginalFilename();
-	            String uploadDir = request.getServletContext().getRealPath("/images/products/");
-	            File uploadFile = new File(uploadDir, fileName);
-	            file.transferTo(uploadFile);
+		Origin origin = new Origin();
+		origin.setId(Integer.parseInt(originsID));
 
-	        } catch (Exception e) {
-	            request.setAttribute("errorMessage", "Lỗi khi upload ảnh: " + e.getMessage());
-	            return "user/personal";
-	        }
-	    }
+		Brand brand = new Brand();
+		brand.setId(Integer.parseInt(brandsID));
 
-        // Lưu thông tin vào cơ sở dữ liệu
-        Product product = new Product();
-        product.setName(name);
-        product.setDescription(description);
-        product.setImage(fileName); // Chỉ lưu tên file vào cơ sở dữ liệu
-        product.setType(type); // Gán đối tượng Type vào sản phẩm
-        product.setOrigin(origin); // Gán đối tượng Origin vào sản phẩm
-        product.setBrand(brand); // Gán đối tượng Brand vào sản phẩm
-        product.setMaterial(material); // Gán đối tượng Material vào sản phẩm
-        boolean isSuccess = productDAO.addProduct(product);
-        
-     // Xử lý upload ảnh (nếu có)
-	    
+		Material material = new Material();
+		material.setId(Integer.parseInt(materialsID));
 
-        // Xử lý kết quả
-        if (isSuccess) {
-            model.addAttribute("message", "Sản phẩm đã được thêm thành công!");
-            return "redirect:emproduct.htm"; // Trả về trang hiển thị thành công
-        } else {
-            model.addAttribute("message", "Đã xảy ra lỗi khi thêm sản phẩm!");
-            return "error"; // Trả về trang hiển thị lỗi
-        }
-    }
-    
-    
-    @RequestMapping("updateprod")
-    public String update(ModelMap model, HttpServletRequest request) {
-    	System.out.println("Thêm sản phẩm thành công: với GET ");
-        // Lấy các thông tin về loại sản phẩm, xuất xứ, thương hiệu và chất liệu
-        List<Type> dsTypes = type.getAllTypes(); // Lấy tất cả loại sản phẩm
-        List<Size> dsSizes = size.getAllSizes(); // Lấy tất cả kích thước
-        List<Origin> dsOrigins = origin.getAllOrigins(); // Lấy tất cả xuất xứ
-        List<Brand> dsBrands = brand.getAllBrands(); // Lấy tất cả thương hiệu
-        List<Material> dsMaterials = material.getAllMaterials(); // Lấy tất cả chất liệu
-        
-        String sid = request.getParameter("productId");
-        int id = Integer.parseInt(sid);
-        Product pr = product.getProductById(id);
+		String fileName = "";
 
-        // Thêm các thông tin vào model
-        model.addAttribute("product", pr);
-        model.addAttribute("types", dsTypes);
-        model.addAttribute("sizes", dsSizes);
-        model.addAttribute("origins", dsOrigins);
-        model.addAttribute("brands", dsBrands);
-        model.addAttribute("materials", dsMaterials);
-        
-     
+		if (file != null && !file.isEmpty()) {
+			try {
+				fileName = file.getOriginalFilename();
+				String uploadDir = request.getServletContext().getRealPath("/images/products/");
+				File uploadFile = new File(uploadDir, fileName);
+				file.transferTo(uploadFile);
 
+			} catch (Exception e) {
+				request.setAttribute("errorMessage", "Lỗi khi upload ảnh: " + e.getMessage());
+				return "user/personal";
+			}
+		}
 
-        // Xử lý thêm logic để lưu sản phẩm vào cơ sở dữ liệu
+		// Lưu thông tin vào cơ sở dữ liệu
+		Product product = new Product();
+		product.setName(name);
+		product.setDescription(description);
+		product.setImage(fileName); // Chỉ lưu tên file vào cơ sở dữ liệu
+		product.setType(type); // Gán đối tượng Type vào sản phẩm
+		product.setOrigin(origin); // Gán đối tượng Origin vào sản phẩm
+		product.setBrand(brand); // Gán đối tượng Brand vào sản phẩm
+		product.setMaterial(material); // Gán đối tượng Material vào sản phẩm
+		boolean isSuccess = productDAO.addProduct(product);
 
-        // Trả về trang addproduct nếu không có lỗi
-        return "employee/updateproduct";
-    }
-    
+		// Xử lý upload ảnh (nếu có)
 
-    @RequestMapping(value = "updateprod", method = RequestMethod.POST)
-    public String updateProduct(HttpServletRequest request, Model model,
-            @RequestParam(value = "file", required = false) MultipartFile file) {
+		// Xử lý kết quả
+		if (isSuccess) {
+			model.addAttribute("message", "Sản phẩm đã được thêm thành công!");
+			return "redirect:emproduct.htm"; // Trả về trang hiển thị thành công
+		} else {
+			model.addAttribute("message", "Đã xảy ra lỗi khi thêm sản phẩm!");
+			return "error"; // Trả về trang hiển thị lỗi
+		}
+	}
 
-        System.out.println("Cập nhật sản phẩm với POST");
+	@RequestMapping("updateprod")
+	public String update(ModelMap model, HttpServletRequest request) {
+		System.out.println("Thêm sản phẩm thành công: với GET ");
+		// Lấy các thông tin về loại sản phẩm, xuất xứ, thương hiệu và chất liệu
+		List<Type> dsTypes = type.getAllTypes(); // Lấy tất cả loại sản phẩm
+		List<Size> dsSizes = size.getAllSizes(); // Lấy tất cả kích thước
+		List<Origin> dsOrigins = origin.getAllOrigins(); // Lấy tất cả xuất xứ
+		List<Brand> dsBrands = brand.getAllBrands(); // Lấy tất cả thương hiệu
+		List<Material> dsMaterials = material.getAllMaterials(); // Lấy tất cả chất liệu
 
-        // Lấy các thông tin từ form
-        String name = request.getParameter("name");
-        String description = request.getParameter("description");
-        String typesID = request.getParameter("typesID");
-        String originsID = request.getParameter("originsID");
-        String brandsID = request.getParameter("brandsID");
-        String materialsID = request.getParameter("materialsID");
+		String sid = request.getParameter("productId");
+		int id = Integer.parseInt(sid);
+		Product pr = product.getProductById(id);
 
-        // Debug: Kiểm tra giá trị lấy được
-        System.out.println("Tên sản phẩm: " + name);
-        System.out.println("Mô tả sản phẩm: " + description);
-        System.out.println("Loại sản phẩm (ID): " + typesID);
-        System.out.println("Xuất xứ (ID): " + originsID);
-        System.out.println("Thương hiệu (ID): " + brandsID);
-        System.out.println("Chất liệu (ID): " + materialsID);
+		// Thêm các thông tin vào model
+		model.addAttribute("product", pr);
+		model.addAttribute("types", dsTypes);
+		model.addAttribute("sizes", dsSizes);
+		model.addAttribute("origins", dsOrigins);
+		model.addAttribute("brands", dsBrands);
+		model.addAttribute("materials", dsMaterials);
 
-        // Tạo đối tượng từ ID
-        Type type = new Type();
-        type.setId(Integer.parseInt(typesID));
+		// Xử lý thêm logic để lưu sản phẩm vào cơ sở dữ liệu
 
-        Origin origin = new Origin();
-        origin.setId(Integer.parseInt(originsID));
+		// Trả về trang addproduct nếu không có lỗi
+		return "employee/updateproduct";
+	}
 
-        Brand brand = new Brand();
-        brand.setId(Integer.parseInt(brandsID));
+	@RequestMapping(value = "updateprod", method = RequestMethod.POST)
+	public String updateProduct(HttpServletRequest request, Model model,
+			@RequestParam(value = "file", required = false) MultipartFile file) {
 
-        Material material = new Material();
-        material.setId(Integer.parseInt(materialsID));
+		System.out.println("Cập nhật sản phẩm với POST");
 
-        // Lấy sản phẩm từ cơ sở dữ liệu
-        String sid = request.getParameter("productId");
-        int id = Integer.parseInt(sid);
-        Product product = productDAO.getProductById(id);
+		// Lấy các thông tin từ form
+		String name = request.getParameter("name");
+		String description = request.getParameter("description");
+		String typesID = request.getParameter("typesID");
+		String originsID = request.getParameter("originsID");
+		String brandsID = request.getParameter("brandsID");
+		String materialsID = request.getParameter("materialsID");
 
-        // Cập nhật các thông tin cơ bản
-        product.setName(name);
-        product.setDescription(description);
-        product.setType(type);
-        product.setOrigin(origin);
-        product.setBrand(brand);
-        product.setMaterial(material);
+		// Debug: Kiểm tra giá trị lấy được
+		System.out.println("Tên sản phẩm: " + name);
+		System.out.println("Mô tả sản phẩm: " + description);
+		System.out.println("Loại sản phẩm (ID): " + typesID);
+		System.out.println("Xuất xứ (ID): " + originsID);
+		System.out.println("Thương hiệu (ID): " + brandsID);
+		System.out.println("Chất liệu (ID): " + materialsID);
 
-        // Kiểm tra và xử lý file ảnh
-        if (file != null && !file.isEmpty()) {
-            try {
-                String fileName = file.getOriginalFilename();
-                String uploadDir = request.getServletContext().getRealPath("/images/products/");
-                File uploadFile = new File(uploadDir, fileName);
-                file.transferTo(uploadFile);
+		// Tạo đối tượng từ ID
+		Type type = new Type();
+		type.setId(Integer.parseInt(typesID));
 
-                // Cập nhật tên file ảnh nếu upload thành công
-                product.setImage(fileName);
-                System.out.println("Ảnh mới được tải lên: " + fileName);
-            } catch (Exception e) {
-                request.setAttribute("errorMessage", "Lỗi khi upload ảnh: " + e.getMessage());
-                return "user/personal";
-            }
-        } else {
-            System.out.println("Không có ảnh mới được tải lên.");
-        }
+		Origin origin = new Origin();
+		origin.setId(Integer.parseInt(originsID));
 
-        // Cập nhật sản phẩm vào cơ sở dữ liệu
-        boolean isSuccess = productDAO.updateProduct(product);
+		Brand brand = new Brand();
+		brand.setId(Integer.parseInt(brandsID));
 
+		Material material = new Material();
+		material.setId(Integer.parseInt(materialsID));
 
-        return "redirect:emproductinfo.htm?proid="+sid;
-    }
+		// Lấy sản phẩm từ cơ sở dữ liệu
+		String sid = request.getParameter("productId");
+		int id = Integer.parseInt(sid);
+		Product product = productDAO.getProductById(id);
 
-    
-    @RequestMapping("emproductinfo")
+		// Cập nhật các thông tin cơ bản
+		product.setName(name);
+		product.setDescription(description);
+		product.setType(type);
+		product.setOrigin(origin);
+		product.setBrand(brand);
+		product.setMaterial(material);
+
+		// Kiểm tra và xử lý file ảnh
+		if (file != null && !file.isEmpty()) {
+			try {
+				String fileName = file.getOriginalFilename();
+				String uploadDir = request.getServletContext().getRealPath("/images/products/");
+				File uploadFile = new File(uploadDir, fileName);
+				file.transferTo(uploadFile);
+
+				// Cập nhật tên file ảnh nếu upload thành công
+				product.setImage(fileName);
+				System.out.println("Ảnh mới được tải lên: " + fileName);
+			} catch (Exception e) {
+				request.setAttribute("errorMessage", "Lỗi khi upload ảnh: " + e.getMessage());
+				return "user/personal";
+			}
+		} else {
+			System.out.println("Không có ảnh mới được tải lên.");
+		}
+
+		// Cập nhật sản phẩm vào cơ sở dữ liệu
+		boolean isSuccess = productDAO.updateProduct(product);
+
+		return "redirect:emproductinfo.htm?proid=" + sid;
+	}
+
+	@RequestMapping("emproductinfo")
 	public String productinfo(HttpServletRequest request) {
 
 		if (request.getParameter("proid") == null) {
@@ -420,198 +421,187 @@ public class EmployeeController {
 		return "employee/product";
 	}
 
-    
-    //theem chi tiet san pham
-    @RequestMapping("emaddproductdetail")
-    public String home_addPrD(ModelMap model, HttpServletRequest request) {
-        // Lấy danh sách sản phẩm
-    	String id = request.getParameter("productid");
-    	int idd = Integer.parseInt(id);
-        Product prdct = productDAO.getProductById(idd);
-        
-        model.addAttribute("product", prdct);
-        
-        // Lấy danh sách kích thước
-        List<Size> sizes = size.getAllSizes(); // Service để lấy danh sách kích thước
-        model.addAttribute("sizes", sizes);
+	// theem chi tiet san pham
+	@RequestMapping("emaddproductdetail")
+	public String home_addPrD(ModelMap model, HttpServletRequest request) {
+		// Lấy danh sách sản phẩm
+		String id = request.getParameter("productid");
+		int idd = Integer.parseInt(id);
+		Product prdct = productDAO.getProductById(idd);
 
-        return "employee/addProductDetail";
-    }
-    
-    
-  //theem chi tiet san pham
-    @RequestMapping("emdelprod")
-    public String delprod(ModelMap model, HttpServletRequest request) {
-        // Lấy danh sách sản phẩm
-    	String id = request.getParameter("productid");
-    	int idd = Integer.parseInt(id);
-        Product prdct = productDAO.getProductById(idd);
-        
-        List<ProductDetail> listprdd = prdd.getAllProductDetails();
-        
-        for(ProductDetail prd: listprdd) {
-        	if(prd.getProduct().getId() == prdct.getId()) {
-        		prdd.deleteProductDetail(prd.getId());
-        	}
-        }
-        
-        product.deleteProduct(idd);
+		model.addAttribute("product", prdct);
 
-        return "redirect:emproduct.htm";
-    }
+		// Lấy danh sách kích thước
+		List<Size> sizes = size.getAllSizes(); // Service để lấy danh sách kích thước
+		model.addAttribute("sizes", sizes);
 
-    
-    @RequestMapping(value = "emaddproductdetail", method = RequestMethod.POST)
-    public String addProductDetail(HttpServletRequest request, Model model,RedirectAttributes redirectAttributes) {
-    	int productId = Integer.parseInt(request.getParameter("productID"));
-    	int price=Integer.parseInt(request.getParameter("price"));
-    	int quantity= Integer.parseInt(request.getParameter("quantity"));
-    	String sizeId = request.getParameter("sizeID");
-    	
-    	List<ProductDetail> list = prdd.getAllProductDetails();
-    	ProductDetail productDetail = null;
-        boolean flag = false;
-        boolean isS = false;
-        
-        //Nếu size đã có thì cập nhật
-        for(ProductDetail d: list) {
-        	if(d.getProduct().getId() == productId && d.getSize().getId().equals(sizeId)) {
-        		productDetail = prdd.getProductDetailById(d.getId());
-        		flag = true;
-        		continue;
-        	}
-        }
-        
-        if(productDetail == null) {
-        	productDetail = new ProductDetail();
-        	flag = false;
-        }
-        
-        // Tạo đối tượng ProductDetail
-        
-        productDetail.setProduct(productDAO.getProductById(productId));
-        productDetail.setSize(size.getSizeById(sizeId));
-        productDetail.setPrice(price);
-        productDetail.setQuantity(quantity);
-        
-        
-        
-        //Chưa có size thì thêm mới
-        if(flag) {
-        	isS= prdd.updateProductDetail(productDetail); 
-        }else {
-        	isS= prdd.addProductDetail(productDetail); 
-        }
+		return "employee/addProductDetail";
+	}
 
-        // Lưu vào cơ sở dữ liệu
-        
-        if(isS) {
-        	redirectAttributes.addFlashAttribute("message", "Thêm chi tiết sản phẩm thành công!");
-        return "redirect:emproduct.htm";
-        }
-        else {
-        	return "error"; // Trả về trang hiển thị lỗi
-        }
-        
-    }
-    
-    //thao tác với đặt tính của sản phẩm
-    @RequestMapping("emprodattribute")
-    public String prodAttributeG(ModelMap model) {
-    	List<Type> dsType = type.getAllTypes();
-    	List<Origin> dsOrigins = origin.getAllOrigins();
-    	List<Brand> dsBrand = brand.getAllBrands();
-    	List<Material> dsMaterials = material.getAllMaterials();
-    	
-    	model.addAttribute("types", dsType);
-    	model.addAttribute("origins", dsOrigins);
-    	model.addAttribute("brands", dsBrand);
-    	model.addAttribute("materials", dsMaterials);
-    	return "employee/proAttributes";
-    }
-    
-    @RequestMapping(value = "emprodattribute", method = RequestMethod.POST)
-    public String prodAttributeP(
-            @RequestParam(value = "id", required = false) Integer id,
-            @RequestParam("name") String name,
-            @RequestParam("action") String action,
-            @RequestParam("type") String tp) {
-    	
-    	String move = "";
+	// theem chi tiet san pham
+	@RequestMapping("emdelprod")
+	public String delprod(ModelMap model, HttpServletRequest request) {
+		// Lấy danh sách sản phẩm
+		String id = request.getParameter("productid");
+		int idd = Integer.parseInt(id);
+		Product prdct = productDAO.getProductById(idd);
 
-        try {
-            if ("category".equals(tp)) { // Xử lý loại sản phẩm
-                if ("add".equals(action) && name != null) {
-                	Type category = new Type();
-                    category.setName(name);
-                    type.addType(category);
-                } else if ("update".equals(action) && id != null && name != null) {
-                	Type category = type.getTypeById(id);
-                    if (category != null) {
-                        category.setName(name);
-                        type.updateType(category);
-                    }
-                } else if ("delete".equals(action) && id != null) {
-                    type.deleteType(id);
-                }
-                move = "class1";
-            }
-            if ("material".equals(tp)) { // Xử lý chất liệu sản phẩm
-                if ("add".equals(action) && name != null) {
-                    Material mt = new Material();
-                    mt.setName(name);
-                    material.addMaterial(mt);
-                } else if ("update".equals(action) && id != null && name != null) {
-                    Material mt = material.getMaterialById(id);
-                    if (mt != null) {
-                        mt.setName(name);
-                        material.updateMaterial(mt);
-                    }
-                } else if ("delete".equals(action) && id != null) {
-                    material.deleteMaterial(id);
-                }
-                move = "class2";
-            }
-            if ("origin".equals(tp)) { // Xử lý xuất xứ sản phẩm
-                if ("add".equals(action) && name != null) {
-                    Origin og = new Origin();
-                    og.setName(name);
-                    origin.addOrigin(og);
-                } else if ("update".equals(action) && id != null && name != null) {
-                    Origin og = origin.getOriginById(id);
-                    if (og != null) {
-                        og.setName(name);
-                        origin.updateOrigin(og);
-                    }
-                } else if ("delete".equals(action) && id != null) {
-                    origin.deleteOrigin(id);
-                }
-                move = "class3";
-            }
-            if ("brand".equals(tp)) { // Xử lý thương hiệu sản phẩm
-                if ("add".equals(action) && name != null) {
-                    Brand br = new Brand();
-                    br.setName(name);
-                    brand.addBrand(br);
-                } else if ("update".equals(action) && id != null && name != null) {
-                    Brand br = brand.getBrandById(id);
-                    if (br != null) {
-                        br.setName(name);
-                        brand.updateBrand(br);
-                    }
-                } else if ("delete".equals(action) && id != null) {
-                    brand.deleteBrand(id);
-                }
-                move = "class4";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "redirect:emprodattribute.htm#"+move; 
-    }
+		List<ProductDetail> listprdd = prdd.getAllProductDetails();
 
+		for (ProductDetail prd : listprdd) {
+			if (prd.getProduct().getId() == prdct.getId()) {
+				prdd.deleteProductDetail(prd.getId());
+			}
+		}
 
-    
+		product.deleteProduct(idd);
+
+		return "redirect:emproduct.htm";
+	}
+
+	@RequestMapping(value = "emaddproductdetail", method = RequestMethod.POST)
+	public String addProductDetail(HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
+		int productId = Integer.parseInt(request.getParameter("productID"));
+		int price = Integer.parseInt(request.getParameter("price"));
+		int quantity = Integer.parseInt(request.getParameter("quantity"));
+		String sizeId = request.getParameter("sizeID");
+
+		List<ProductDetail> list = prdd.getAllProductDetails();
+		ProductDetail productDetail = null;
+		boolean flag = false;
+		boolean isS = false;
+
+		// Nếu size đã có thì cập nhật
+		for (ProductDetail d : list) {
+			if (d.getProduct().getId() == productId && d.getSize().getId().equals(sizeId)) {
+				productDetail = prdd.getProductDetailById(d.getId());
+				flag = true;
+				continue;
+			}
+		}
+
+		if (productDetail == null) {
+			productDetail = new ProductDetail();
+			flag = false;
+		}
+
+		// Tạo đối tượng ProductDetail
+
+		productDetail.setProduct(productDAO.getProductById(productId));
+		productDetail.setSize(size.getSizeById(sizeId));
+		productDetail.setPrice(price);
+		productDetail.setQuantity(quantity);
+
+		// Chưa có size thì thêm mới
+		if (flag) {
+			isS = prdd.updateProductDetail(productDetail);
+		} else {
+			isS = prdd.addProductDetail(productDetail);
+		}
+
+		// Lưu vào cơ sở dữ liệu
+
+		if (isS) {
+			redirectAttributes.addFlashAttribute("message", "Thêm chi tiết sản phẩm thành công!");
+			return "redirect:emproduct.htm";
+		} else {
+			return "error"; // Trả về trang hiển thị lỗi
+		}
+
+	}
+
+	// thao tác với đặt tính của sản phẩm
+	@RequestMapping("emprodattribute")
+	public String prodAttributeG(ModelMap model) {
+		List<Type> dsType = type.getAllTypes();
+		List<Origin> dsOrigins = origin.getAllOrigins();
+		List<Brand> dsBrand = brand.getAllBrands();
+		List<Material> dsMaterials = material.getAllMaterials();
+
+		model.addAttribute("types", dsType);
+		model.addAttribute("origins", dsOrigins);
+		model.addAttribute("brands", dsBrand);
+		model.addAttribute("materials", dsMaterials);
+		return "employee/proAttributes";
+	}
+
+	@RequestMapping(value = "emprodattribute", method = RequestMethod.POST)
+	public String prodAttributeP(@RequestParam(value = "id", required = false) Integer id,
+			@RequestParam("name") String name, @RequestParam("action") String action, @RequestParam("type") String tp) {
+
+		String move = "";
+
+		try {
+			if ("category".equals(tp)) { // Xử lý loại sản phẩm
+				if ("add".equals(action) && name != null) {
+					Type category = new Type();
+					category.setName(name);
+					type.addType(category);
+				} else if ("update".equals(action) && id != null && name != null) {
+					Type category = type.getTypeById(id);
+					if (category != null) {
+						category.setName(name);
+						type.updateType(category);
+					}
+				} else if ("delete".equals(action) && id != null) {
+					type.deleteType(id);
+				}
+				move = "class1";
+			}
+			if ("material".equals(tp)) { // Xử lý chất liệu sản phẩm
+				if ("add".equals(action) && name != null) {
+					Material mt = new Material();
+					mt.setName(name);
+					material.addMaterial(mt);
+				} else if ("update".equals(action) && id != null && name != null) {
+					Material mt = material.getMaterialById(id);
+					if (mt != null) {
+						mt.setName(name);
+						material.updateMaterial(mt);
+					}
+				} else if ("delete".equals(action) && id != null) {
+					material.deleteMaterial(id);
+				}
+				move = "class2";
+			}
+			if ("origin".equals(tp)) { // Xử lý xuất xứ sản phẩm
+				if ("add".equals(action) && name != null) {
+					Origin og = new Origin();
+					og.setName(name);
+					origin.addOrigin(og);
+				} else if ("update".equals(action) && id != null && name != null) {
+					Origin og = origin.getOriginById(id);
+					if (og != null) {
+						og.setName(name);
+						origin.updateOrigin(og);
+					}
+				} else if ("delete".equals(action) && id != null) {
+					origin.deleteOrigin(id);
+				}
+				move = "class3";
+			}
+			if ("brand".equals(tp)) { // Xử lý thương hiệu sản phẩm
+				if ("add".equals(action) && name != null) {
+					Brand br = new Brand();
+					br.setName(name);
+					brand.addBrand(br);
+				} else if ("update".equals(action) && id != null && name != null) {
+					Brand br = brand.getBrandById(id);
+					if (br != null) {
+						br.setName(name);
+						brand.updateBrand(br);
+					}
+				} else if ("delete".equals(action) && id != null) {
+					brand.deleteBrand(id);
+				}
+				move = "class4";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "redirect:emprodattribute.htm#" + move;
+	}
+
 //    @RequestMapping("feedback")
 //	public String feedback(ModelMap model) {
 //
@@ -629,4 +619,269 @@ public class EmployeeController {
 //		return "employee/feedback";
 //	}
 
+	@RequestMapping(value = { "emorder" }, method = RequestMethod.GET)
+	public String order(@RequestParam(value = "idstatus", required = false) Integer idstatus,
+			@RequestParam(value = "idorder", required = false) Integer idorder,
+			@RequestParam(value = "idcustomer", required = false) Integer idcustomer,
+			@RequestParam(value = "fromDate", required = false) String fromDate,
+			@RequestParam(value = "toDate", required = false) String toDate, HttpSession session, ModelMap model) {
+
+//    	if (ses == null || ses.getAttribute("jwtToken") == null) {
+//            return "redirect:home.htm";
+//        }
+//    	String token = (String) ses.getAttribute("jwtToken");
+//    	if (JwtUtil.validateToken(token) == false) {
+//            return "redirect:home.htm";
+//        }
+//    	if(((String)ses.getAttribute("role")).equals(Roles.getUser())) {
+//			return "redirect:home.htm";
+//			
+//		}else if(((String)ses.getAttribute("role")).equals(Roles.getAdmin())){
+//			return "redirect:adhome.htm";
+//		}
+
+		List<Order> orders = orderDAO.getAllOrders();
+		List<Map<String, Object>> ordersList = new ArrayList<>();
+		
+		if(idorder != null) {
+	    	Order order = orderDAO.getOrderById(idorder);
+	    	if(order == null) {
+	    		model.addAttribute("orders", ordersList);
+	    	    return "employee/order/index";
+	    	}
+	    	 Map<String, Object> ordersMap = new HashMap<>();
+	    	int totalQuantity = 0;
+            List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(order.getId());
+
+            for (OrderDetail orderDetail : orderDetails) {
+                totalQuantity += orderDetail.getQuantity();
+            }
+            ordersMap.put("order", order);
+            ordersMap.put("totalQuantity", totalQuantity);
+            ordersList.add(ordersMap);
+            model.addAttribute("orders", ordersList);
+    	    return "employee/order/index";
+	    }
+		
+		if (orders != null) {
+			for (Order order : orders) {
+				boolean matchesStatus;
+				if (idstatus != null && idstatus == 1) {
+					matchesStatus = order.getPaymentStatus() == 0;
+				} else {
+					matchesStatus = (idstatus == null || order.getOrderStatus().getId() == idstatus);
+				}
+
+				boolean matchesDateRange = isWithinDateRange(order, fromDate, toDate);
+				boolean matchesCustomer = (idcustomer == null || order.getCustomer().getId() == idcustomer);
+
+				if (matchesStatus && matchesDateRange && matchesCustomer) {
+					Map<String, Object> ordersMap = new HashMap<>();
+					int totalQuantity = 0;
+					List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(order.getId());
+
+					for (OrderDetail orderDetail : orderDetails) {
+						totalQuantity += orderDetail.getQuantity();
+					}
+					ordersMap.put("order", order);
+					ordersMap.put("totalQuantity", totalQuantity);
+					ordersList.add(ordersMap);
+				}
+			}
+		}
+
+		Collections.reverse(ordersList);
+		model.addAttribute("orders", ordersList);
+		return "employee/order/index";
+	}
+
+	private boolean isWithinDateRange(Order order, String fromDate, String toDate) {
+		if (fromDate == null && toDate == null) {
+			return true;
+		}
+
+		// Lấy ngày tạo của đơn hàng (chuyển sang LocalDateTime)
+		Date orderDate = order.getCreateTime();
+		LocalDateTime orderDateTime = orderDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+		// Kiểm tra ngày từ
+		if (fromDate != null) {
+			LocalDateTime from = LocalDateTime.parse(fromDate + "T00:00:00");
+			if (orderDateTime.isBefore(from)) {
+				return false;
+			}
+		}
+
+		// Kiểm tra ngày đến
+		if (toDate != null) {
+			LocalDateTime to = LocalDateTime.parse(toDate + "T23:59:59");
+			if (orderDateTime.isAfter(to)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	@RequestMapping("emorder/orderdetail/{idOrder}")
+	public String orderdetail(@PathVariable("idOrder") Integer idOrder, HttpSession session, ModelMap model) {
+
+//    	if (ses == null || ses.getAttribute("jwtToken") == null) {
+//      return "redirect:home.htm";
+//  }
+//	String token = (String) ses.getAttribute("jwtToken");
+//	if (JwtUtil.validateToken(token) == false) {
+//      return "redirect:home.htm";
+//  }
+//	if(((String)ses.getAttribute("role")).equals(Roles.getUser())) {
+//		return "redirect:home.htm";
+//		
+//	}else if(((String)ses.getAttribute("role")).equals(Roles.getAdmin())){
+//		return "redirect:adhome.htm";
+//	}
+
+		Order order = orderDAO.getOrderById(idOrder);
+		if (order == null) {
+			return "redirect:/emorder.htm";
+		}
+
+		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
+		List<Map<String, Object>> orderDetailsList = new ArrayList<Map<String, Object>>();
+
+		if (orderDetails != null) {
+			for (OrderDetail orderDetail : orderDetails) {
+				Map<String, Object> orderDetailsMap = new HashMap<String, Object>();
+				ProductDetail productDetail = orderDetail.getProductDetail();
+				Product product = productDetail.getProduct();
+
+				orderDetailsMap.put("product", product);
+				orderDetailsMap.put("productDetail", productDetail);
+				orderDetailsMap.put("orderDetail", orderDetail);
+				orderDetailsMap.put("customer", orderDetail.getOrder().getCustomer());
+				orderDetailsList.add(orderDetailsMap);
+			}
+		} else {
+			return "redirect:/order.htm";
+		}
+
+		model.addAttribute("order", order);
+		model.addAttribute("orderDetails", orderDetailsList);
+		model.addAttribute("cancelReasons", reasonDAO.getAllReasons());
+
+		return "employee/order/detail";
+	}
+
+	@RequestMapping("emorder/status/{idOrder}")
+	public String status(@PathVariable("idOrder") Integer idOrder, @RequestParam("status") Integer status,
+			HttpSession session, ModelMap model) {
+
+//    	if (ses == null || ses.getAttribute("jwtToken") == null) {
+//      return "redirect:home.htm";
+//  }
+//	String token = (String) ses.getAttribute("jwtToken");
+//	if (JwtUtil.validateToken(token) == false) {
+//      return "redirect:home.htm";
+//  }
+//	if(((String)ses.getAttribute("role")).equals(Roles.getUser())) {
+//		return "redirect:home.htm";
+//		
+//	}else if(((String)ses.getAttribute("role")).equals(Roles.getAdmin())){
+//		return "redirect:adhome.htm";
+//	}
+		OrderStatus orderStatus = orderStatusDAO.getOrderStatusById(status);
+		Order order = orderDAO.getOrderById(idOrder);
+		int statusId = order.getOrderStatus().getId();
+		if (order == null) {
+			return "redirect:/emorder.htm";
+		} else if (orderStatus == null) {
+			return "redirect:/emorder.htm";
+		} else if (statusId == 1 || statusId == 4 || statusId == 5) {
+			return "redirect:/emorder.htm";
+		}
+
+		order.setOrderStatus(orderStatusDAO.getOrderStatusById(status));
+		orderDAO.updateOrder(order);
+
+		return "redirect:/emorder/orderdetail/" + idOrder + ".htm";
+	}
+
+	@RequestMapping("emorder/cancel/{idOrder}/{idCustomer}")
+	public String cancel(@PathVariable("idOrder") Integer idOrder, @PathVariable("idCustomer") Integer idCustomer,
+			@RequestParam("idReason") Integer idReason, HttpSession session, ModelMap model) {
+
+//    	if (ses == null || ses.getAttribute("jwtToken") == null) {
+//      return "redirect:home.htm";
+//  }
+//	String token = (String) ses.getAttribute("jwtToken");
+//	if (JwtUtil.validateToken(token) == false) {
+//      return "redirect:home.htm";
+//  }
+//	if(((String)ses.getAttribute("role")).equals(Roles.getUser())) {
+//		return "redirect:home.htm";
+//		
+//	}else if(((String)ses.getAttribute("role")).equals(Roles.getAdmin())){
+//		return "redirect:adhome.htm";
+//	}
+		if (idCustomer == null) {
+			return "redirect:/emorder.htm";
+		} else if (idOrder == null) {
+			return "redirect:/emorder.htm";
+		} else if (idReason == null) {
+			return "redirect:/emorder.htm";
+		}
+
+		Customer customer = cusd.getCustomerById(idCustomer);
+
+		Order order = orderDAO.getOrderById(idOrder);
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2)) {
+			return "redirect:/emorder.htm";
+		} else if (order.getCustomer().getId() != idCustomer) {
+			return "redirect:/emorder.htm";
+		}
+
+		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
+		List<Cart> carts = cartDAO.getCartsByCustomerId(idCustomer);
+
+		if (orderDetails != null) {
+			for (OrderDetail orderDetail : orderDetails) {
+				ProductDetail productDetail = orderDetail.getProductDetail();
+				Product product = productDetail.getProduct();
+
+				Integer total = (int) (orderDetail.getQuantity() * orderDetail.getUnitPrice());
+				Boolean flag = true;
+
+				if (carts != null) {
+					for (Cart cart : carts) {
+						if (cart.getProductDetail().getId() == productDetail.getId()) {
+							cart.setQuantity(orderDetail.getQuantity());
+							cart.setTotalPrice(total);
+
+							cartDAO.updateCart(cart);
+							flag = false;
+							break;
+						}
+					}
+				}
+				if (flag) {
+					Cart cart = new Cart(orderDetail.getQuantity(), 0, total, customer, productDetail);
+					cartDAO.createCart(cart);
+				}
+
+				productDetail.setQuantity(productDetail.getQuantity() + orderDetail.getQuantity());
+				prdd.updateProductDetail(productDetail);
+			}
+		} else {
+			return "redirect:/emorder.htm";
+		}
+
+		Date currentDate = new Date();
+		order.setOrderStatus(orderStatusDAO.getOrderStatusById(5));
+		order.setUpdateTime(currentDate);
+		order.setReason(reasonDAO.getReasonById(idReason));
+		orderDAO.updateOrder(order);
+
+		return "redirect:/emorder/orderdetail/" + idOrder + ".htm";
+	}
 }
