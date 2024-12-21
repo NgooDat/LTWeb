@@ -99,16 +99,16 @@ public class PaymentController {
 
 		// Lấy danh sách idCart từ session
 		@SuppressWarnings("unchecked")
-		List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
-		if (selectedCartIds == null) {
-			return "redirect:/home.htm";
+		List<Integer> selectIdCarts= (List<Integer>) session.getAttribute("selectIdCarts");
+		if (selectIdCarts == null) {
+			return "redirect:cart.htm";
 		}
 		List<Map<String, Object>> selectProducts = new ArrayList<>();
 		List<Product> dsProduct = productDAO.getAllProducts();
 		List<ProductDetail> dsDetail = productDetailDAO.getAllProductDetails();
 		int givenCustomerId = customer.getId();
 
-		for (int idCart : selectedCartIds) {
+		for (int idCart : selectIdCarts) {
 			Cart cart = cartDAO.getCartById(idCart); // Lấy Cart từ DAO
 			if (cart.getCustomer().getId() == givenCustomerId) {
 				// Tìm ProductDetail tương ứng với product_detailsID trong Cart
@@ -222,9 +222,9 @@ public class PaymentController {
 		Account account = accountDAO.getAccountByEmail(email);
 		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
-		List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
+		List<Integer> selectIdCarts= (List<Integer>) session.getAttribute("selectIdCarts");
 
-		if (selectedCartIds.isEmpty()) {
+		if (selectIdCarts.isEmpty()) {
 			model.addAttribute("message", "Đặt hàng không thành công!!!");
 			return "payment/success";
 		}
@@ -234,7 +234,7 @@ public class PaymentController {
 		Set<OrderDetail> orderDetails = new HashSet<>();
 		double totalProductFee = 0.0;
 
-		for (int idCart : selectedCartIds) {
+		for (int idCart : selectIdCarts) {
 
 			Cart cart = cartDAO.getCartById(idCart);
 			if (cart == null || cart.getProductDetail() == null) {
@@ -294,7 +294,7 @@ public class PaymentController {
 		customer.setPhone(phone);
 		customerDAO.updateCustomer(customer);
 
-		session.removeAttribute("selectedCartIds");
+		session.removeAttribute("selectIdCarts");
 
 		session.setAttribute("idOrderResult", order.getId());
 
@@ -414,15 +414,15 @@ public class PaymentController {
 
 				Date currentDate = new Date();
 
-				List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
+				List<Integer> selectIdCarts= (List<Integer>) session.getAttribute("selectIdCarts");
 
-				if (selectedCartIds.isEmpty()) {
+				if (selectIdCarts.isEmpty()) {
 					return "redirect:/home.htm";
 				}
 
 				Set<OrderDetail> orderDetails = new HashSet<>();
 
-				for (int idCart : selectedCartIds) {
+				for (int idCart : selectIdCarts) {
 
 					Cart cart = cartDAO.getCartById(idCart);
 					if (cart == null || cart.getProductDetail() == null) {
@@ -479,7 +479,7 @@ public class PaymentController {
 				customer.setPhone(phone);
 				customerDAO.updateCustomer(customer);
 
-				session.removeAttribute("selectedCartIds");
+				session.removeAttribute("selectIdCarts");
 
 				session.setAttribute("newOrderId", order.getId());
 
@@ -778,15 +778,15 @@ public class PaymentController {
 
 			Date currentDate1 = new Date();
 
-			List<Integer> selectedCartIds = (List<Integer>) session.getAttribute("selectedCartIds");
+			List<Integer> selectIdCarts= (List<Integer>) session.getAttribute("selectIdCarts");
 
-			if (selectedCartIds.isEmpty()) {
+			if (selectIdCarts.isEmpty()) {
 				return "redirect:/home.htm";
 			}
 
 			Set<OrderDetail> orderDetails = new HashSet<>();
 
-			for (int idCart : selectedCartIds) {
+			for (int idCart : selectIdCarts) {
 
 				Cart cart = cartDAO.getCartById(idCart);
 				if (cart == null || cart.getProductDetail() == null) {
@@ -843,7 +843,7 @@ public class PaymentController {
 			customer.setPhone(phone);
 			customerDAO.updateCustomer(customer);
 
-			session.removeAttribute("selectedCartIds");
+			session.removeAttribute("selectIdCarts");
 
 			session.setAttribute("newOrderId", order.getId());
 

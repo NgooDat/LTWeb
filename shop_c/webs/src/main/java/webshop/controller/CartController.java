@@ -47,8 +47,6 @@ public class CartController {
 
 	@RequestMapping("")
 	public String cart(HttpSession session, ModelMap model) {
-		
-		
 
 		List<Cart> dsCart;
 		int givenCustomerId;
@@ -119,14 +117,14 @@ public class CartController {
 		return "user/cart";
 	}
 
-	@ResponseBody // Để trả về dữ liệu trực tiếp (JSON hoặc string)
+	@ResponseBody // Để trả về dữ liệu trực tiếp
 	@RequestMapping(value = "/add", method = RequestMethod.GET)
 	public String insert(@RequestParam("price") int price, @RequestParam("pdid") int pdid,
 			@RequestParam("quantity") int quantity, HttpSession session) {
 
 		ProductDetail productDetail = productDetailDAO.getProductDetailById(pdid);
 		if (productDetail == null) {
-			return "{\"message\": \"Không tồn tại sản phẩm này!\", \"status\": \"false\"}";
+			return "one";
 		}
 
 		String email = (String) session.getAttribute("user");
@@ -145,7 +143,7 @@ public class CartController {
 
 					carts = cartDAO.getCartsByCustomerId(customer.getId());
 					session.setAttribute("carts", carts);
-					return "{\"message\": \"Sản phẩm đã có trong giỏ hàng!\", \"status\": \"false\"}";
+					return "two";
 				}
 			}
 
@@ -163,7 +161,7 @@ public class CartController {
 						cart.setQuantity(cart.getQuantity() + quantity);
 
 						session.setAttribute("carts", carts);
-						return "{\"message\": \"Sản phẩm đã có trong giỏ hàng!\", \"status\": \"false\"}";
+						return "two";
 					}
 				}
 			}
@@ -174,29 +172,37 @@ public class CartController {
 		}
 
 		session.setAttribute("carts", carts);
-		return "{\"message\": \"Sản phẩm đã được thêm vào giỏ hàng!\", \"status\": \"true\"}";
+		return "three";
 	}
 
-	@ResponseBody // Để trả về dữ liệu trực tiếp (JSON hoặc string)
+	@ResponseBody // Để trả về dữ liệu trực tiếp
 	@RequestMapping(value = "/del", method = RequestMethod.GET)
 	public String delete(@RequestParam("idCart") int idCart, HttpSession session) {
+
+		List<Integer> selectIdCarts = (List<Integer>) session.getAttribute("selectIdCarts");
 
 		String email = (String) session.getAttribute("user");
 		List<Cart> carts = (List<Cart>) session.getAttribute("carts");
 		if (email != null) {
 			cartDAO.deleteCart(idCart);
+			if (selectIdCarts != null && selectIdCarts.contains(idCart)) {
+				selectIdCarts.remove(Integer.valueOf(idCart));
+			}
 		} else {
 			if (carts != null) {
 				carts.removeIf(cart -> cart.getID() == idCart);
-
+				if (selectIdCarts != null && selectIdCarts.contains(idCart)) {
+					selectIdCarts.remove(Integer.valueOf(idCart));
+				}
 				session.setAttribute("carts", carts);
 			}
 		}
-
-		return "{\"message\": \"Xóa giỏ hàng thành công!\", \"status\": \"success\"}";
+		
+		session.setAttribute("selectIdCarts", selectIdCarts);
+		return "Xóa giỏ hàng thành công!!!";
 	}
 
-	@ResponseBody // Để trả về dữ liệu trực tiếp (JSON hoặc string)
+	@ResponseBody // Để trả về dữ liệu trực tiếp
 	@RequestMapping(value = "/upd", method = RequestMethod.GET)
 	public String update(@RequestParam("idCart") int idCart, @RequestParam("quantity") int quantity,
 			@RequestParam("total") int total, HttpSession session) {
@@ -219,19 +225,60 @@ public class CartController {
 			}
 		}
 
-		return "{\"message\": \"Sửa số lượng thành công!\", \"status\": \"success\"}";
+		return "Sửa số lượng thành công!!!";
 	}
 
-	@RequestMapping(value = "/selected", method = RequestMethod.POST)
-	public ResponseEntity<Void> saveSelectedCartIds(@RequestBody Map<String, List<Integer>> data, HttpSession session) {
-		// Lấy danh sách idCart từ request
-		List<Integer> idCart = data.get("idCart");
-		if (idCart != null && !idCart.isEmpty()) {
-			// Lưu danh sách vào HttpSession
-			session.setAttribute("selectedCartIds", idCart);
-			return new ResponseEntity<>(HttpStatus.OK); // Trả về trạng thái 200 OK
+	@ResponseBody // Để trả về dữ liệu trực tiếp
+	@RequestMapping(value = "select/{idCart}", method = RequestMethod.GET)
+	public String selectedIdCart(@PathVariable("idCart") Integer idCart, @RequestParam("checkvalue") Boolean checkvalue,
+			HttpSession session, ModelMap model) {
+
+		List<Integer> selectIdCarts = (List<Integer>) session.getAttribute("selectIdCarts");
+		if (selectIdCarts == null) {
+			selectIdCarts = new ArrayList<>();
 		}
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // Trả về trạng thái 400 Bad Request
+
+		if (checkvalue == null) {
+			return "Hớ???";
+		}
+
+		String email = (String) session.getAttribute("user");
+
+		if (email != null) {
+			Account account = accountDAO.getAccountByEmail(email);
+			Customer customer = customerDAO.getCustomerByAccountID(account.getId());
+			Cart cart = cartDAO.getCartById(idCart);
+			if (cart.getCustomer().getId() != customer.getId()) {
+				return "Hả???";
+			} else {
+				if (checkvalue != null && checkvalue) {
+					if (!selectIdCarts.contains(idCart)) {
+						selectIdCarts.add(idCart);
+					}
+				} else {
+					selectIdCarts.remove(Integer.valueOf(idCart));
+				}
+			}
+
+		} else {
+			List<Cart> carts = (List<Cart>) session.getAttribute("carts");
+			if (carts != null) {
+				Cart cart = carts.stream().filter(c -> c.getID() == idCart).findFirst().orElse(null);
+
+				if (cart != null) {
+					if (checkvalue != null && checkvalue) {
+						if (!selectIdCarts.contains(idCart)) {
+							selectIdCarts.add(idCart);
+						}
+					} else {
+						selectIdCarts.remove(Integer.valueOf(idCart));
+					}
+				}
+			}
+		}
+
+		session.setAttribute("selectIdCarts", selectIdCarts);
+		return "OK!!!";
 	}
 
 }
