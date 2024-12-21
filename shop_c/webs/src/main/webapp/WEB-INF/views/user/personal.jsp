@@ -46,16 +46,20 @@
 
         <!-- Form nhập liệu bên phải -->
         <div class="form-container">
+        <h2 class="u-text u-text-default u-text-palette-1-base u-block-b62f-5">Thông tin cá nhân
+                        <p style="color: #bd381b; font-weight: 400; font-size: 16px" class = "message">${message}</p>
+                        </h2>
           <!-- Họ và tên -->
           <div class="u-form-group u-form-name">
             <label for="name-92f3" class="u-label">Họ và tên</label>
-            <input type="text" value="${personal.name}" placeholder="Họ và tên" id="name-92f3" name="name" class="input u-input u-input-rectangle" required>
+            
+            <input type="text" value="${personal.name}${name}" placeholder="Họ và tên" id="name-92f3" name="name" class="input u-input u-input-rectangle" required>
           </div>
 
           <!-- Số điện thoại -->
           <div class="u-form-phone u-form-group">
             <label for="phone-92f3" class="u-label">Số điện thoại</label>
-            <input type="tel" value="${personal.phone}" placeholder="Số điện thoại" id="phone-92f3" name="phone" class="input u-input u-input-rectangle" required>
+            <input type="number" value="${personal.phone}${phone}" placeholder="Số điện thoại" id="phone-92f3" name="phone" class="input u-input u-input-rectangle" required>
                         <span id="phoneError" style="color: red; display: none;">Số điện thoại phải có 10 chữ số!</span> <!-- Hiển thị lỗi -->
             
           </div>
@@ -63,7 +67,7 @@
            <!-- Email -->
           <div class="u-form-email u-form-group">
             <label for="email-92f3" class="u-label">Email</label>
-            <input type="email" value="${acc.email}" placeholder="Email" id="email-92f3" name="email" class="input u-input u-input-rectangle" required>
+            <input type="email" value="${acc.email}${email}" placeholder="Email" id="email-92f3" name="email" class="input u-input u-input-rectangle" required>
                 <span id="emailError" style="color: red; display: none;">Email không hợp lệ!</span> <!-- Hiển thị lỗi -->
             
           </div>
@@ -71,7 +75,7 @@
 
           <!-- Nút submit -->
           <div class="u-align-center u-form-group u-form-submit">
-            <input type="submit" value="Cập nhật" class="input2 u-btn u-btn-submit u-button-style">
+            <button onclick="handleButtonClick(event)"  class="input2 u-btn u-btn-submit u-button-style">Cập nhật</button>
           </div>
         </div>
 
@@ -83,11 +87,7 @@
 </section>
 
 <!-- Hiển thị thông báo nếu có -->
-<c:if test="${not empty message}">
-  <div class="alert alert-info">
-    <p>${message}</p>
-  </div>
-</c:if>
+
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 
@@ -161,8 +161,17 @@
       margin-top: 10px; /* Giảm khoảng cách từ trên */
     
   }
+  
+  h2{
+  width: 100%!important;
+    text-align: center!important;
+    font-size: 30px!important;
+    font-weight: 600!important;
+    margin: 0!important;
+  }
 section{
   	background: #eee;
+  	min-height: 80vh;
   }
   .alert-info:hover {
     transform: translateY(-5px);
@@ -232,6 +241,8 @@ section{
     border-color: #007bff;
     box-shadow: 0 0 6px rgba(0, 123, 255, 0.5); /* Bóng nhẹ khi focus */
   }
+  
+  
 
   /* Nút Cập nhật cũng viền đen và bo tròn */
   .input2 {
@@ -280,6 +291,19 @@ section{
           phoneError.style.display = 'none'; // Ẩn thông báo lỗi nếu đúng
       }
   }
+  
+  // Định nghĩa hàm xử lý sự kiện
+  function handleButtonClick(event) {
+            // Hiển thị hộp thoại xác nhận
+            const isConfirmed = confirm("Bạn có chắc chắn cập nhật?");
+            
+            if (!isConfirmed) {
+                // Ngăn hành động mặc định (nếu có)
+                event.preventDefault();
+                
+            } 
+        }
+</script>
 </script>
 <script>
   // Hàm kiểm tra email

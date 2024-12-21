@@ -21,31 +21,33 @@
             <div
                 class="u-align-center u-border-20 u-border-no-bottom u-border-no-left u-border-no-top u-border-palette-1-base u-container-align-center u-container-style u-custom-border u-expanded-width-md u-expanded-width-sm u-expanded-width-xs u-group u-radius u-shape-round u-white u-block-b62f-3">
                 <div class="u-container-layout u-valign-middle-xs u-valign-top-lg u-valign-top-xl u-block-b62f-4">
-                    <h2 class="u-text u-text-default u-text-palette-1-base u-block-b62f-5">Đăng ký tài khoản</h2>
+                    <h2 class="u-text u-text-default u-text-palette-1-base u-block-b62f-5">Đăng ký tài khoản
+                    <p class="message">${message}</p>
+                    </h2>
 
-                    <c:if test="${not empty message}">
-                        <p class="message">${message}</p>
-                    </c:if>
+                    
+                        
+                    
 
                     <div class="u-expanded-width-xs u-form u-login-control u-block-b62f-6">
                         <form action="register.htm" method="POST"
                             class="u-clearfix u-form-custom-backend u-form-spacing-10 u-form-vertical u-inner-form">
                             <div class="u-form-group u-block-b62f-7">
                                 <label for="email" class="u-label u-text-grey-25 u-block-b62f-8">Email</label>
-                                <input type="email" placeholder="Nhập email" id="email" name="email"
+                                <input type="email" placeholder="Nhập email" id="email" name="email" value="${email }"
                                     class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-9"
                                     required>
                             </div>
                             <div class="u-form-group u-block-b62f-10">
                                 <label for="password" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu</label>
-                                <input type="password" placeholder="Nhập mật khẩu" id="password" name="password"
+                                <input type="password" placeholder="Nhập mật khẩu" id="password" name="password" value="${pass }"
                                     class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12"
                                     required>
                             </div>
                             <div class="u-form-group u-block-b62f-10">
                                 <label for="confirmPassword" class="u-label u-text-grey-25 u-block-b62f-11">Nhập lại
                                     mật khẩu</label>
-                                <input type="password" placeholder="Nhập lại mật khẩu" id="confirmPassword"
+                                <input type="password" placeholder="Nhập lại mật khẩu" id="confirmPassword" value="${pass2 }"
                                     name="confirmPassword"
                                     class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12"
                                     required>

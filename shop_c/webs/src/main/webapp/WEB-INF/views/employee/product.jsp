@@ -45,7 +45,7 @@
 				​<span class="u-file-icon u-icon u-block-control u-block-60d2-18"
 					style="font-size: 2.1112em; margin-left: 80px; margin-right: 11px; vertical-align: -1px"
 					data-block="12" data-block-type="Icon"><img src="/10bc3df0da2a6a/7078310.png" alt=""
-						data-original-src="" data-color=""></span>&nbsp;>> Thông tin sản phẩm​​
+						data-original-src="" data-color=""></span>Thông tin sản phẩm​​
 			</p>
 			<div class="custom-expanded data-layout-selected u-clearfix u-layout-wrap u-block-control u-block-60d2-3"
 				style="width: 980px; margin-top: 12px; margin-left: auto; margin-right: auto; margin-bottom: 60px"
@@ -224,7 +224,34 @@
 				</div>
 			</div>
 		</div>
+		<script>
+		// Định nghĩa hàm xử lý sự kiện
+		  function handleButtonClick(event) {
+		            // Hiển thị hộp thoại xác nhận
+		            const isConfirmed = confirm("Bạn có chắc chắn cập nhật?");
+		            
+		            if (!isConfirmed) {
+		                // Ngăn hành động mặc định (nếu có)
+		                event.preventDefault();
+		                
+		            } 
+		        }
+		</script>
 		<style>
+		        button{
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)!important;
+			overflow:hidden;
+		}
+		
+		.u-btn{
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)!important;
+			overflow:hidden;
+		}
+		
+		
+			.u-layout{
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)!important;
+		}
 		</style>
 		<style data-mode="XL" data-visited="true">
 			@media (max-width : 0px) {

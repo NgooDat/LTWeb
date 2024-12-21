@@ -51,9 +51,8 @@
                                     <div class="back-list"></div>
                                     <div class="back-list2"></div>
                                     <ul class="account-list u-align-right u-nav u-popupmenu-items u-text-hover-palette-1-base u-unstyled u-nav-2">
-                                        <li class="item-menu u-nav-item"><a href="emproduct.htm" class="u-button-style u-nav-link">Tài khoản admin</a></li>
-                                        <li class="item-menu u-nav-item"><a href="resetpass.htm" class="u-button-style u-nav-link">Tài khoản nhân viên</a></li>
-                                        <li class="item-menu u-nav-item"><a href="emproduct.htm" class="u-button-style u-nav-link">Tài khoản người dùng</a></li>
+                                        <li class="item-menu u-nav-item"><a href="staffmanage.htm" class="u-button-style u-nav-link">Quản lý nhân viên</a></li>
+                                        <li class="item-menu u-nav-item"><a href="addstaff.htm" class="u-button-style u-nav-link">Thêm nhân viên</a></li>
                                     </ul>
                                 </li>
                                 
@@ -67,7 +66,7 @@
                                     <div class="back-list"></div>
                                     <div class="back-list2"></div>
                                     <ul class="account-list u-align-right u-nav u-popupmenu-items u-text-hover-palette-1-base u-unstyled u-nav-2">
-                                       
+                                       <li class="item-menu u-nav-item"><a href="resetpass.htm" class="u-button-style u-nav-link">Đổi mật khẩu</a></li>
                                         <li class="item-menu u-nav-item"><a href="logout.htm" class="u-button-style u-nav-link">Đăng xuất</a></li>
                                     </ul>
                                 </li>

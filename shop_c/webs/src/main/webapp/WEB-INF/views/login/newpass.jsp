@@ -38,12 +38,12 @@
 
                                 <div class="u-form-group u-form-password u-block-b62f-10">
                                     <label for="password-a30d" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu</label>
-                                    <input type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="password"
+                                    <input type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="password" value="${pass1}"
                                            class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12" >
                                 </div>
                                 <div class="u-form-group u-form-password u-block-b62f-10">
                                     <label for="password-a30d" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu</label>
-                                    <input type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="repass"
+                                    <input type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="repass" value="${pass2}"
                                            class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12" >
                                 </div>
                                 <div class="u-align-left u-form-group u-form-submit u-block-b62f-15">

@@ -38,6 +38,7 @@ import webshop.entity.OrderDetail;
 import webshop.entity.Product;
 import webshop.entity.ProductDetail;
 import webshop.security.Authentication;
+import webshop.security.Bcrypt;
 
 @Controller
 public class UserController {
@@ -144,13 +145,9 @@ public class UserController {
 	}
 	
 	
-	@RequestMapping(value="productinfo", method = RequestMethod.GET)
-	public String getproductinfo(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		
-		return "redirect:home.htm";
-	}
+	
 
-	@RequestMapping(value="productinfo", method = RequestMethod.POST)
+	@RequestMapping(value="productinfo")
 	public String productinfo(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		
@@ -185,9 +182,6 @@ public class UserController {
 	    	return "redirect:login.htm";
 	    }
 
-		if (session.getAttribute("user") == null) {
-			return "redirect:/login.htm";
-		}
 
 		String email = (String) session.getAttribute("user");
 
@@ -196,12 +190,14 @@ public class UserController {
 		Customer cs = null;
 
 		if (acc != null) {
-			cs = cusd.getCustomerById(acc.getId());
+			cs = cusd.getCustomerByAccountID(acc.getId());
 		}
 
 		if (cs != null) {
 			request.setAttribute("acc", acc);
 			request.setAttribute("personal", cs);
+		}else {
+			return "redirect:error.htm";
 		}
 
 		return "user/personal";
@@ -249,7 +245,8 @@ public class UserController {
 	    // Xử lý upload ảnh (nếu có)
 	    if (file != null && !file.isEmpty()) {
 	        try {
-	            String fileName = file.getOriginalFilename();
+	        	String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+	            String fileName = timestamp + file.getOriginalFilename();
 	            String uploadDir = request.getServletContext().getRealPath("/images/avatar/");
 	            File uploadFile = new File(uploadDir, fileName);
 	            file.transferTo(uploadFile);
@@ -294,25 +291,54 @@ public class UserController {
 	        model.addAttribute("errorMessage", "Tài khoản không tồn tại.");
 	        return "login/resetpass";
 	    }
+	    
+	    boolean flag = false;
 
 	    // Kiểm tra mật khẩu cũ
-	    if (!currentPassword.equals(acc.getPassword())) { // Nếu cần, thêm mã hóa bcrypt để so sánh
+	    if (!Bcrypt.matches(currentPassword, acc.getPassword())) { // Nếu cần, thêm mã hóa bcrypt để so sánh
+	        
+	        flag = true;
+	        if(session.getAttribute("count")==null) {
+				session.setAttribute("count", 1);
+			}else {
+				int count = (int)session.getAttribute("count");
+				if(count == 2) {
+					session.invalidate();
+					return "redirect:login.htm";
+				}
+				count = count + 1;
+				session.setAttribute("count", count);
+			}
 	        model.addAttribute("errorMessage", "Mật khẩu cũ không đúng.");
-	        return "login/resetpass";
+	        
 	    }
 
 	    // Kiểm tra mật khẩu mới và xác nhận mật khẩu
-	    if (!newPassword.equals(confirmPassword)) {
+	    else if (!newPassword.equals(confirmPassword)) {
 	        model.addAttribute("errorMessage", "Mật khẩu xác nhận không khớp.");
+	        flag = true;
+	    }
+	    
+	    //Kiểm tra mk mạnh
+	    else if(!Bcrypt.isStrongPassword(confirmPassword)) {
+	    	model.addAttribute("errorMessage", "Mật khẩu phải trên 8 ký tự, có chữ hoa chữ thường, số và ký tự đặc biệt!");
+	    	flag = true;
+	    }
+	    
+	    if(flag) {
+	    	model.addAttribute("pass1", currentPassword);
+	        model.addAttribute("pass2", newPassword);
+	        model.addAttribute("pass3", confirmPassword);
 	        return "login/resetpass";
 	    }
 
 	    // Cập nhật mật khẩu mới
-	    acc.setPassword(newPassword); // Nếu cần, mã hóa mật khẩu bằng bcrypt trước khi lưu
+	    acc.setPassword(Bcrypt.encodePassword(confirmPassword)); // Nếu cần, mã hóa mật khẩu bằng bcrypt trước khi lưu
 	    boolean isUpdated = accd.updateAccount(acc);
 
 	    if (isUpdated) {
 	        model.addAttribute("successMessage", "Đổi mật khẩu thành công!");
+	        return "redirect:home.htm";
 	    } else {
 	        model.addAttribute("errorMessage", "Có lỗi xảy ra khi đổi mật khẩu.");
 	    }

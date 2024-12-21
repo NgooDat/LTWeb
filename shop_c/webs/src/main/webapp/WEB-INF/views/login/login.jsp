@@ -37,17 +37,17 @@
                                   name="form" style="padding: 16px;" data-services="">
                                 <div class="u-form-group u-form-name u-block-b62f-7">
                                     <label for="username-a30d" class="u-label u-text-grey-25 u-block-b62f-8">Tên đăng nhập</label>
-                                    <input type="text" placeholder="Nhập tên đăng nhập" id="username-a30d" name="username"
+                                    <input  required type="text" placeholder="Nhập tên đăng nhập" id="username-a30d" name="username" value="${mail }"
                                            class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-9" >
                                 </div>
                                 <div class="u-form-group u-form-password u-block-b62f-10">
                                     <label for="password-a30d" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu</label>
-                                    <input type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="password"
+                                    <input required type="password" placeholder="Nhập mật khẩu" id="password-a30d" name="password" value="${pass }"
                                            class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12" >
                                 </div>
                                 <div class="u-form-checkbox u-form-group u-block-b62f-13">
-                                    <input type="checkbox" id="checkbox-a30d" name="remember" value="On" class="u-field-input">
-                                    <label for="checkbox-a30d" class="u-block-b62f-14 u-field-label u-text-grey-25"
+                                    <input  type="checkbox" id="checkbox-a30d" name="remember" value="On" class="u-field-input">
+                                    <label for="checkbox-a30d" class="u-block-b62f-14 u-field-label u-text-grey-25" 
                                            style="text-transform: uppercase; font-size: 0.875rem; letter-spacing: 0px">Lưu mật khẩu</label>
                                 </div>
                                 <div class="u-align-left u-form-group u-form-submit u-block-b62f-15">

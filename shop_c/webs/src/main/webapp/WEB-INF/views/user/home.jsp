@@ -115,6 +115,21 @@
 
       border-radius: 8px;
     }
+    
+     button{
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)!important;
+			overflow:hidden;
+		}
+		
+		.u-btn{
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)!important;
+			overflow:hidden;
+		}
+		
+		
+			.u-layout{
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)!important;
+		}
 
     .u-align-center.u-product-control.u-text {
       display: block;

@@ -23,11 +23,14 @@
         <section class="u-clearfix u-grey-10 u-block-b62f-1" custom-posts-hash="[]" data-style="blank"
                  data-section-properties="{&quot;margin&quot;:&quot;none&quot;,&quot;stretch&quot;:true}" id="carousel_5973"
                  data-source="functional_fix" data-id="b62f">
-            <div class="u-clearfix u-sheet u-valign-middle u-block-b62f-2">
+            <div style="height: 100vh" class="u-clearfix u-sheet u-valign-middle u-block-b62f-2">
                 <div
                     class="u-align-center u-border-20 u-border-no-bottom u-border-no-left u-border-no-top u-border-palette-1-base u-container-align-center u-container-style u-custom-border u-expanded-width-md u-expanded-width-sm u-expanded-width-xs u-group u-radius u-shape-round u-white u-block-b62f-3">
                     <div class="u-container-layout u-valign-middle-xs u-valign-top-lg u-valign-top-xl u-block-b62f-4">
-                        <h2 class="u-text u-text-default u-text-palette-1-base u-block-b62f-5">Đổi mật khẩu</h2>
+                        <h2 class="u-text u-text-default u-text-palette-1-base u-block-b62f-5">Đổi mật khẩu
+                        <p class = "message">${successMessage}${errorMessage}</p>
+                        </h2>
+                        
                         <div class="u-expanded-width-xs u-form u-login-control u-block-b62f-6">
                             <form action="#" method="POST"
       class="u-clearfix u-form-custom-backend u-form-spacing-10 u-form-vertical u-inner-form">
@@ -36,7 +39,7 @@
                                 <label for="currentPassword" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu cũ</label>
                                 <div style="position: relative;">
                                     <input type="password" placeholder="Nhập mật khẩu cũ" id="currentPassword"
-                                        name="currentPassword"
+                                        name="currentPassword" value="${ pass1}"
                                         class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12"
                                         required>
                                     <span class="toggle-password" onclick="togglePassword('currentPassword', this)"
@@ -52,7 +55,7 @@
                                 <label for="newPassword" class="u-label u-text-grey-25 u-block-b62f-11">Mật khẩu mới</label>
                                 <div style="position: relative;">
                                     <input type="password" placeholder="Nhập mật khẩu mới" id="newPassword" name="newPassword"
-                                        class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12"
+                                        class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12"  value="${ pass2}"
                                         required>
                                     <span class="toggle-password" onclick="togglePassword('newPassword', this)"
                                         style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
@@ -67,7 +70,7 @@
                                 <label for="confirmPassword"
                                     class="u-label u-text-grey-25 u-block-b62f-11">Xác nhận mật khẩu</label>
                                 <div style="position: relative;">
-                                    <input type="password" placeholder="Xác nhận mật khẩu mới" id="confirmPassword"
+                                    <input type="password" placeholder="Xác nhận mật khẩu mới" id="confirmPassword"  value="${ pass3}"
                                         name="confirmPassword"
                                         class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-12"
                                         required>
@@ -87,13 +90,7 @@
                             </div>
                         </form>
 
-                        <!-- Hiển thị thông báo -->
-                        <c:if test="${not empty successMessage}">
-                            <p style="color: green; text-align: center;">${successMessage}</p>
-                        </c:if>
-                        <c:if test="${not empty errorMessage}">
-                            <p style="color: red; text-align: center;">${errorMessage}</p>
-                        </c:if>
+                       
                         <script>
                             function togglePassword(inputId, iconElement) {
                                 const input = document.getElementById(inputId);
@@ -108,12 +105,25 @@
                             }
                         </script>
                     </div>
-                    <a href="home.htm"
+                    <a href="home.htm" style="margin-top: 20px!important"
                         class="u-border-1 u-border-active-palette-1-base u-border-hover-palette-1-base u-btn u-button-style u-login-control u-login-create-account u-none u-text-palette-1-base u-block-b62f-18">Quay lại</a>
                 </div>
             </div>
         </div>
+        <style>
+        button{
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)!important;
+		}
+        
+        </style>
             <style data-mode="XL">
+            
+            		.message{
+            		
+            			position: absolute; top: 100%; width: 100%;
+            			font-size: 14px!important; color: #bd381b;
+            			text-transform: none;
+            		}
             
             		.u-align-center{
             			margin-top: 40px!important;

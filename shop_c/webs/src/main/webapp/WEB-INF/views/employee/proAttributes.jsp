@@ -88,8 +88,8 @@
 												<input type="text" name="name" value="${type.name}" class="inputtable">
 											</td>
 											<td class="center">
-												<input type="submit" name="action" value="update" class="save">
-												<input type="submit" name="action" value="delete" class="del">
+												<button onclick="handleButtonClick(event)" type="submit" name="action" value="update" class="save">Cập nhật</button>
+												<button onclick="handleButtonClick(event)" type="submit" name="action" value="delete" class="del">Xóa</button>
 											</td>
 										</tr>
 									</form>
@@ -121,7 +121,7 @@
 											class="inputtable">
 									</td>
 									<td class="center">
-										<input type="submit" name="action" value="add" class="save">
+										<button onclick="handleButtonClick(event)" name="action" value="add" class="save">Thêm</button>
 									</td>
 								</tr>
 							</form>
@@ -212,8 +212,8 @@
 													class="inputtable">
 											</td>
 											<td class="center u-border-1 u-border-grey-15 u-table-cell">
-												<input type="submit" name="action" value="update" class="save">
-												<input type="submit" name="action" value="delete" class="del">
+												<button onclick="handleButtonClick(event)" type="submit" name="action" value="update" class="save">Cập nhật</button>
+												<button onclick="handleButtonClick(event)" type="submit" name="action" value="delete" class="del">Xóa</button>
 											</td>
 										</tr>
 									</form>
@@ -230,7 +230,7 @@
 											class="inputtable">
 									</td>
 									<td class="center u-border-1 u-border-grey-15 u-table-cell">
-										<input type="submit" name="action" value="add" class="save">
+										<button onclick="handleButtonClick(event)" type="submit" name="action" value="add" class="add">Thêm</button>
 									</td>
 								</tr>
 							</form>
@@ -324,8 +324,8 @@
 													class="inputtable">
 											</td>
 											<td class="center u-border-1 u-border-grey-15 u-table-cell">
-												<input type="submit" name="action" value="update" class="save">
-												<input type="submit" name="action" value="delete" class="del">
+												<button onclick="handleButtonClick(event)" type="submit" name="action" value="update" class="save">Cập nhật</button>
+												<button onclick="handleButtonClick(event)" type="submit" name="action" value="delete" class="del">Xóa</button>
 											</td>
 										</tr>
 									</form>
@@ -342,7 +342,7 @@
 											class="inputtable">
 									</td>
 									<td class="center u-border-1 u-border-grey-15 u-table-cell">
-										<input type="submit" name="action" value="add" class="save">
+										<button onclick="handleButtonClick(event)" type="submit" name="action" value="add" class="add">Thêm</button>
 									</td>
 								</tr>
 							</form>
@@ -434,8 +434,8 @@
 												<input type="text" name="name" value="${brand.name}" class="inputtable">
 											</td>
 											<td class="center u-border-1 u-border-grey-15 u-table-cell">
-												<input type="submit" name="action" value="update" class="save">
-												<input type="submit" name="action" value="delete" class="del">
+												<button onclick="handleButtonClick(event)" type="submit" name="action" value="update" class="save">Cập nhật</button>
+												<button onclick="handleButtonClick(event)" type="submit" name="action" value="delete" class="del">Xóa</button>
 											</td>
 										</tr>
 									</form>
@@ -452,7 +452,7 @@
 											class="inputtable">
 									</td>
 									<td class="center u-border-1 u-border-grey-15 u-table-cell">
-										<input type="submit" name="action" value="add" class="save">
+										<button onclick="handleButtonClick(event)" type="submit" name="action" value="add" class="add">Thêm</button>
 									</td>
 								</tr>
 							</form>
@@ -472,6 +472,50 @@
 
 
 	<style>
+	
+	.add{
+		background: #42b72a;
+		padding: 6px 20px;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		color: #fff;
+		font-size: 14px;
+	}
+	
+	.del{
+		background: red;
+		margin-left: 5px;
+		padding: 6px 20px;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		color: #fff;
+		font-size: 14px;
+	}
+	
+	.save{
+		margin-right: 5px;
+		background: #1877f2;
+		padding: 6px 20px;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		color: #fff;
+		font-size: 14px;
+	}
+	
+	.add:hover{
+		opacity: 0.7;
+	}
+	
+	.del:hover{
+		opacity: 0.7;
+	}
+	
+	.save:hover{
+		opacity: 0.7;
+	}
 	
 		#class1 td{
 			border: 1px solid #ccc;
@@ -1335,6 +1379,19 @@
 			}
 		}
 	</style>
+	<script>
+	// Định nghĩa hàm xử lý sự kiện
+	  function handleButtonClick(event) {
+	            // Hiển thị hộp thoại xác nhận
+	            const isConfirmed = confirm("Bạn có chắc chắn thực hiện?");
+	            
+	            if (!isConfirmed) {
+	                // Ngăn hành động mặc định (nếu có)
+	                event.preventDefault();
+	                
+	            } 
+	        }
+	</script>
 </body>
 
 </html>

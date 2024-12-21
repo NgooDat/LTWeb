@@ -15,6 +15,7 @@ import webshop.dao.AccountDAO;
 import webshop.dao.CartDAO;
 import webshop.dao.CustomerDAO;
 import webshop.dao.RuleDAO;
+import webshop.dao.StaffDAO;
 import webshop.dao.UploadFile;
 import webshop.entity.Account;
 import webshop.entity.Brand;
@@ -23,8 +24,10 @@ import webshop.entity.Customer;
 import webshop.entity.Material;
 import webshop.entity.Origin;
 import webshop.entity.Rule;
+import webshop.entity.Staff;
 import webshop.entity.Type;
 import webshop.security.Authentication;
+import webshop.security.Bcrypt;
 import webshop.security.Email;
 import webshop.security.JwtUtil;
 import webshop.security.Roles;
@@ -37,6 +40,8 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Controller
 public class LoginController {
@@ -48,6 +53,8 @@ public class LoginController {
 	private AccountDAO accountDAO;
 	@Autowired
 	CustomerDAO customerDAO;
+	@Autowired
+	StaffDAO staffDAO;
 	@Autowired
 	CartDAO cartDAO;
 	@Autowired
@@ -64,15 +71,79 @@ public class LoginController {
 		if (log) {
 			return "redirect:home.htm";
 		}
+		
+		
+		if(request.getParameter("capcha") != null && request.getParameter("newcapcha") != null){
+			String capcha = request.getParameter("capcha");
+			String inputCapcha = request.getParameter("newcapcha");
+			if(!capcha.equals(inputCapcha)) {
+				model.addAttribute("message", "Capcha không trùng khớp!");
+				model.addAttribute("mail", username);
+				model.addAttribute("pass", password);
+				int count = Authentication.getCountForCapCha(request);
+				String newCapcha = Bcrypt.generateCaptcha(6);
+				model.addAttribute("capcha", newCapcha);
+				//model.addAttribute("inputcapcha", request.getParameter("newcapcha"));
+				count = count + 1;
+				Authentication.addTokenCount(count, response);
+				return "login/login_capcha";
+			}
+			//session.setAttribute("count", null);
+		} 
 
 		Optional<Account> account = accountDAO.findAccountByUsernameAndPassword(username, password);
 		session = request.getSession(false);
 		if (account.isPresent()) {
-
+			Authentication.deleteCount(request, response);
 			Account acc = accountDAO.getAccountByEmail(username);
-			Customer customer = customerDAO.getCustomerByAccountID(acc.getId());
-			int rules = acc.getRule().getId();
+			if(acc.getStatus()==0) {
+				model.addAttribute("message", "Tài khoản đã bị khóa!");
+				return "login/login";
+			}
+			
+			
 			String role = acc.getRule().getName();
+			
+			if(role.equals(Roles.getAdmin())) {
+				//adfmin
+			}else if(role.equals(Roles.getEmployee())) {
+				Staff staf = staffDAO.getStaffByAccountId(acc.getId());
+				if(staf == null) {
+					return "notice";
+				}
+			}else {
+				Customer customer = customerDAO.getCustomerByAccountID(acc.getId());
+				if(customer == null) {
+					return "notice";
+				}
+				List<Cart> carts = (List<Cart>) session.getAttribute("carts");
+				List<Cart> customerCarts = cartDAO.getCartsByCustomerId(customer.getId());
+
+				if (carts != null) {
+					for (Cart cart : carts) {
+						boolean flag = false;
+						if (customerCarts != null) {
+							for (Cart customerCart : customerCarts) {
+								if (customerCart.getProductDetail().getId() == cart.getProductDetail().getId()
+										&& customerCart.getStatus() == cart.getStatus()) {
+									customerCart.setQuantity(customerCart.getQuantity() + cart.getQuantity());
+									cartDAO.updateCart(customerCart);
+									flag = true;
+									break;
+								}
+							}
+						}
+						if (!flag) {
+							cart.setCustomer(customer);
+							cartDAO.createCart(cart);
+						}
+					}
+				}
+			}
+			
+			
+			
+			
 			// phân quyền các kiểu
 			// sau này có Mã hóa sau session + pass
 
@@ -83,47 +154,60 @@ public class LoginController {
 
 			session.setAttribute("user", username);
 			session.setAttribute("role", role);
+			return "redirect:/home.htm";
+			
+			
+		} else {
+			
+			model.addAttribute("mail", username);
+			model.addAttribute("pass", password);
+			
+			model.addAttribute("message", "Tên đăng nhập hoặc mật khẩu không đúng!");
+			
+			
+			int dem = Authentication.getCountForCapCha(request);
+			System.out.println(dem);
+			if(dem == 0) {
+				Authentication.addTokenCount(1, response);
+			}else {
+				if(dem  >= 4) {
+					String newCapcha = Bcrypt.generateCaptcha(6);
+					
 
-			List<Cart> carts = (List<Cart>) session.getAttribute("carts");
-			List<Cart> customerCarts = cartDAO.getCartsByCustomerId(customer.getId());
-
-			if (carts != null) {
-				for (Cart cart : carts) {
-					boolean flag = false;
-					if (customerCarts != null) {
-						for (Cart customerCart : customerCarts) {
-							if (customerCart.getProductDetail().getId() == cart.getProductDetail().getId()
-									&& customerCart.getStatus() == cart.getStatus()) {
-								customerCart.setQuantity(customerCart.getQuantity() + cart.getQuantity());
-								cartDAO.updateCart(customerCart);
-								flag = true;
-								break;
-							}
-						}
-					}
-					if (!flag) {
-						cart.setCustomer(customer);
-						cartDAO.createCart(cart);
-					}
+					model.addAttribute("capcha", newCapcha);
+					//model.addAttribute("inputcapcha", request.getAttribute("newcapcha"));
+					return "login/login_capcha";
 				}
+				dem = dem + 1;
+				Authentication.addTokenCount(dem, response);
+				
 			}
 
-			return "redirect:/home.htm";
-		} else {
-
-			model.addAttribute("message", "Tên đăng nhập hoặc mật khẩu không đúng!");
-			return "login/login";
 		}
+		
+		return "login/login";
 	}
 
 	@RequestMapping(value = "register", method = RequestMethod.POST)
 	public String register(@RequestParam("email") String email, @RequestParam("password") String password,
 			@RequestParam("confirmPassword") String confirmPassword, HttpServletRequest request,
 			HttpServletResponse response, Model model) throws IOException {
+		
+		
 
 		boolean log = Authentication.isLogin(request, response);
 		if (log) {
 			return "redirect:home.htm";
+		}
+		
+		model.addAttribute("email", email);
+		model.addAttribute("pass", password);
+		model.addAttribute("pass2", confirmPassword);
+		
+		// Kiểm tra xem email đã tồn tại chưa
+		if (accountDAO.getAccountByEmail(email) != null) {
+			model.addAttribute("message", "Email đã tồn tại!");
+			return "login/register";
 		}
 
 		// Kiểm tra xem mật khẩu nhập lại có khớp không
@@ -131,14 +215,15 @@ public class LoginController {
 			model.addAttribute("message", "Mật khẩu không khớp!");
 			return "login/register";
 		}
-
-		// Kiểm tra xem email đã tồn tại chưa
-		if (accountDAO.getAccountByEmail(email) != null) {
-			model.addAttribute("message", "Email đã tồn tại!");
+		
+		if(!Bcrypt.isStrongPassword(confirmPassword)) {
+			model.addAttribute("message", "Mật khẩu phải trên 8 ký tự, có chữ hoa chữ thường, số và ký tự đặc biệt!");
 			return "login/register";
 		}
+
+		
 		// Lấy quyền mặc định từ RuleDAO
-		Rule defaultRule = rule.getRuleById(2); // ID 2 là quyền mặc định
+		Rule defaultRule = rule.getRuleById(3); // ID 2 là quyền mặc định
 		if (defaultRule == null) {
 			model.addAttribute("message", "Không thể tìm thấy quyền mặc định.");
 			return "login/register";
@@ -146,7 +231,7 @@ public class LoginController {
 		// Tạo tài khoản mới
 		Account account = new Account();
 		account.setEmail(email);
-		account.setPassword(password); // Bạn nên mã hóa mật khẩu trước khi lưu
+		account.setPassword(Bcrypt.encodePassword(confirmPassword)); // Bạn nên mã hóa mật khẩu trước khi lưu
 		account.setStatus(1); // Đặt trạng thái mặc định (hoạt động)
 		account.setRule(defaultRule); // Quyền mặc định
 
@@ -158,8 +243,13 @@ public class LoginController {
 		customer.setAccount(account);
 		customerDAO.createCustomer(customer);
 		if (success) {
-			model.addAttribute("message", "Đăng ký thành công! Hãy đăng nhập.");
-			return "login/login";
+			Authentication.addToken(Roles.getUser(), response);
+			HttpSession ses = request.getSession(false);
+			ses.setAttribute("user", email);
+			request.setAttribute("acc", account);
+			request.setAttribute("personal", customer);
+			model.addAttribute("message","Đăng ký tài khoản thành công! Giờ hãy cập nhật thông tin cá nhân!");
+			return "user/personal";
 		} else {
 			model.addAttribute("message", "Có lỗi xảy ra. Vui lòng thử lại.");
 			return "login/register";
@@ -186,6 +276,9 @@ public class LoginController {
 		if (!log) {
 			return "redirect:login.htm";
 		}
+		model.addAttribute("email", email);
+		model.addAttribute("name", name);
+		model.addAttribute("phone", phone);
 		// Kiểm tra định dạng email
 		String emailPattern = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
 		if (!email.matches(emailPattern)) {
@@ -242,6 +335,9 @@ public class LoginController {
 		if (customerDAO.updateCustomer(customer)) {
 			// Cập nhật lại thông tin session sau khi cập nhật
 			model.addAttribute("message", "Cập nhật thông tin thành công!");
+			model.addAttribute("email", "");
+			model.addAttribute("name", "");
+			model.addAttribute("phone", "");
 			session.setAttribute("user", username); // Đảm bảo session giữ tài khoản người dùng
 			model.addAttribute("personal", customer); // Truyền lại thông tin cá nhân đã cập nhật
 			model.addAttribute("acc", account); // Truyền lại thông tin tài khoản đã cập nhật
@@ -310,18 +406,36 @@ public class LoginController {
 			return "redirect:home.htm";
 		}
 		String mail = request.getParameter("mail");
-		session.setAttribute("mail", mail);
+		Account acc = accountDAO.getAccountByEmail(mail);
+		if(acc ==  null) {
+			model.addAttribute("message", "Mail không tồn tại trên hệ thống!");
+			model.addAttribute("email", mail);
+			if(session.getAttribute("countmail")==null) {
+				session.setAttribute("countmail", 1);
+			}else {
+				int count = (int)session.getAttribute("countmail");
+				if(count == 2) {
+					session.invalidate();
+					return "redirect:login.htm";
+				}
+				count = count + 1;
+				session.setAttribute("countmail", count);
+			}
+			return "login/inputmail";
+		}else {
+			session.setAttribute("mail", mail);
 
-		// Kiểm tra mail có tồn tại
-
-		// List<Account> acc = accountDAO.get
-
-		// Gửi code
-		String code = Email.getCode();
-		session.setAttribute("code", code);
-		code = code + " là mã khôi phục tài khoản webshop của bạn!";
-
-		String send = new Email().sendCode(mailSender, mail, code, code);
+			
+			ExecutorService executorService = Executors.newFixedThreadPool(5);
+			executorService.submit(() -> {
+				// Gửi code
+				String code = Email.getCode();
+				session.setAttribute("code", code);
+				code = code + " là mã khôi phục tài khoản webshop của bạn!";
+				new Email().sendCode(mailSender, mail, code, code);
+			});
+		}
+		
 		return "login/inputcode";
 
 	}
@@ -339,8 +453,21 @@ public class LoginController {
 
 		if (code.equals(send)) {
 			return "login/newpass";
+		}else {
+			model.addAttribute("message", "Mã code không chính xác!(Không được nhập sai quá 3 lần)");
+			if(session.getAttribute("countcode")==null) {
+				session.setAttribute("countcode", 1);
+			}else {
+				int count = (int)session.getAttribute("countcode");
+				if(count == 2) {
+					session.invalidate();
+					return "redirect:login.htm";
+				}
+				count = count + 1;
+				session.setAttribute("countcode", count);
+			}
 		}
-
+		
 		return "login/inputcode";
 
 	}
@@ -357,13 +484,39 @@ public class LoginController {
 		String repass = request.getParameter("repass");
 
 		if (!pass.equals(repass)) {
-
+			
+			if(session.getAttribute("countpass")==null) {
+				session.setAttribute("countpass", 1);
+			}else {
+				int count = (int)session.getAttribute("countpass");
+				if(count == 2) {
+					session.invalidate();
+					
+					return "redirect:login.htm";
+				}
+				count = count + 1;
+				session.setAttribute("countpass", count);
+			}
+			model.addAttribute("message", "Mật khẩu không khớp!");
+			model.addAttribute("pass1", pass);
+			model.addAttribute("pass2", repass);
+			return "login/newpass";
 		} else {
+			//Kiểm tra mk mạnh
+		    if(!Bcrypt.isStrongPassword(repass)) {
+		    	model.addAttribute("message", "Mật khẩu phải trên 8 ký tự, có chữ hoa chữ thường, số và ký tự đặc biệt!");
+		    	model.addAttribute("pass1", pass);
+				model.addAttribute("pass2", repass);
+				return "login/newpass";
+		    }else {
+		    	String email = (String) session.getAttribute("mail");
+				Account account = accountDAO.getAccountByEmail(email);
+				account.setPassword(Bcrypt.encodePassword(repass));
+				accountDAO.updateAccount(account);
+				session.invalidate();
+		    }
 			//
-			String email = (String) session.getAttribute("mail");
-			Account account = accountDAO.getAccountByEmail(email);
-			account.setPassword(pass);
-			accountDAO.updateAccount(account);
+			
 		}
 
 		return "redirect:login.htm";

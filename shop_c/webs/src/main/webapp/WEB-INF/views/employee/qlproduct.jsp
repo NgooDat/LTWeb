@@ -160,11 +160,21 @@
 	    }
 	}
     </script>
+    
   <style>
     .u-align-center.u-border-1.u-border-palette-5-light-2 {
 
       border-radius: 8px;
     }
+    
+            button{
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)!important;
+		}
+		
+		.u-btn{
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2)!important;
+			overflow:hidden;
+		}
     
     .add{
     	max-width: 140px!important;

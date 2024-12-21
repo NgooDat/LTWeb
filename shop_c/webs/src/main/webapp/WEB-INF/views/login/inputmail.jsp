@@ -37,7 +37,7 @@
                                   name="form" style="padding: 16px;" data-services="">
                                 <div class="u-form-group u-form-name u-block-b62f-7">
                                     <label for="username-a30d" class="u-label u-text-grey-25 u-block-b62f-8">Email</label>
-                                    <input type="text" placeholder="Nhập email" id="username-a30d" name="mail"
+                                    <input type="text" placeholder="Nhập email" id="username-a30d" name="mail" value="${email }"
                                            class="u-border-2 u-border-grey-10 u-grey-10 u-input u-input-rectangle u-block-b62f-9" >
                                 </div>
                                 

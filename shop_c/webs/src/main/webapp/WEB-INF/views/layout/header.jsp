@@ -20,7 +20,7 @@
                 </a>
                 <nav class="u-dropdown-icon u-menu u-menu-one-level u-menu-open-right u-offcanvas u-menu-1"
                      data-responsive-from="MD" data-submenu-level="on-click">
-                    <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px;">
+                     <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px;">
                         <a class="u-button-style u-custom-left-right-menu-spacing u-custom-padding-bottom u-custom-top-bottom-menu-spacing u-hamburger-link u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base u-hamburger-link-1"
                            href="#">
                             <svg class="u-svg-link" viewBox="0 0 24 24">
@@ -124,7 +124,7 @@
                             </svg>
                         </span>
                     </button>
-                    <input class="u-search-input" type="search" name="search" value="" placeholder="Tìm kiếm">
+                    <input style="padding-left: 23px;" class="u-search-input" type="search" name="search" value="" placeholder="Tìm kiếm">
                 </form>
             </div>
             <style class="u-sticky-style" data-style-id="8e13">
