@@ -236,7 +236,7 @@
 													style="font-weight: 700; font-size: 1rem;">
 													<c:choose>
 														<c:when
-															test="${orderDetail.orderDetail.quantity < orderDetail.productDetail.quantity}">
+															test="${orderDetail.orderDetail.quantity <= orderDetail.productDetail.quantity || (order.orderStatus.id != 4 && order.orderStatus.id != 5)}">
 															Vẫn còn hàng
 														</c:when>
 														<c:otherwise>

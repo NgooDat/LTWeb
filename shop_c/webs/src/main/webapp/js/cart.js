@@ -10,12 +10,13 @@ function updateTotal(input) {
 
 	// Tính tổng tiền
 	const total = Math.round(price * quantity);  // Làm tròn tổng tiền thành số nguyên
+	const formattedTotal = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total);
 
 	// Cập nhật tổng tiền trong giao diện
 	const totalElement = document.getElementById(`total${cartId}`);
-	totalElement.querySelector('.u-price').textContent = total;  // Hiển thị tổng tiền mà không có thập phân
+	totalElement.querySelector('.u-price').textContent = formattedTotal;  // Hiển thị tổng tiền mà không có thập phân
 
-	// Cập nhật dữ liệu tổng tiền trong thẻ (có thể cần thiết để gửi về server)
+	// Cập nhật dữ liệu tổng tiền trong thẻ
 	totalElement.querySelector('.u-price').setAttribute('data-total', total);
 
 	// Có thể gọi API hoặc thực hiện các thao tác khác nếu cần thiết (ví dụ: gửi dữ liệu về server)
@@ -85,14 +86,16 @@ function updateSelectedTotal() {
 			// Nếu checkbox được chọn, cộng tổng tiền món vào
 			const cartId = checkbox.id.replace('checkbox', '');  // Lấy cartId từ id của checkbox
 			const totalElement = document.getElementById(`total${cartId}`);
-			const itemTotal = parseFloat(totalElement.querySelector('.u-price').textContent) || 0;
+			//const itemTotal = parseFloat(totalElement.querySelector('.u-price').textContent) || 0;
+			const itemTotal = parseFloat(totalElement.querySelector('.u-price').getAttribute('data-total')) || 0;
 			total += itemTotal;
 		}
 	});
 
 	// Cập nhật tổng tiền trong phần tử tổng tiền
 	const totalPriceElement = document.getElementById('totalPrice');
-	totalPriceElement.textContent = total.toFixed(0) + ' VNĐ';  // Hiển thị tổng tiền, không có phần thập phân
+	const formattedTotal = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total);
+	totalPriceElement.textContent = formattedTotal;  // Hiển thị tổng tiền, không có phần thập phân
 }
 
 // Lắng nghe sự kiện thay đổi trạng thái checkbox
@@ -143,6 +146,7 @@ function deleteElementById(id) {
 	if (element) {
 		element.remove(); // Xóa thẻ và tất cả nội dung bên trong
 		console.log(`Đã xóa thẻ với id: ${id}`);
+		updateSelectedTotal();
 	} else {
 		console.log(`Không tìm thấy thẻ với id: ${id}`);
 	}

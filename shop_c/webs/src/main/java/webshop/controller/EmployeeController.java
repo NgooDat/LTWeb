@@ -876,6 +876,9 @@ public class EmployeeController {
 		}
 
 		order.setOrderStatus(orderStatusDAO.getOrderStatusById(status));
+		if(status == 4) {
+			order.setPaymentStatus(1);
+		}
 		orderDAO.updateOrder(order);
 
 		return "redirect:/emorder/orderdetail/" + idOrder + ".htm";

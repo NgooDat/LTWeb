@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
 <html style="font-size: 16px;" lang="vi">
 
@@ -80,10 +81,10 @@
 									<h4 id="price" class="u-text u-text-custom-color-5 u-block-control u-block-60d2-9"
 										style="font-weight: 700; font-size: 1.875rem; margin-top: 0.4063px; margin-right: 109.672px; margin-bottom: 0px; margin-left: 30.9922px;"
 										data-block="18" data-block-type="Text">
-										${productDetail[0].price}</h4>
+										<fmt:formatNumber value="${productDetail[0].price}" type="number" groupingUsed="true" /></h4>
 									<h4 class="u-text u-text-custom-color-5 u-block-control u-block-60d2-9"
 										style="font-weight: 700; font-size: 1.875rem; margin-top: 0.4063px; margin-right: 109.672px; margin-bottom: 0px; margin-left: -105px;"
-										data-block="18" data-block-type="Text">&nbsp;VNĐ</h4>
+										data-block="18" data-block-type="Text">&nbsp;₫</h4>
 								</div>
 
 								<ul style="margin-left: 60px;">
@@ -91,8 +92,7 @@
 									<li>Nguồn gốc: ${product.origin.name }</li>
 									<li>Thương hiệu: ${product.brand.name }</li>
 									<li>Chất liệu: ${product.material.name }</li>
-
-
+									<li>Mô tả: ${product.description }</li>
 								</ul>
 								<div style="display: inline-flex;">
 									<p class="u-text u-text-default u-block-control u-block-60d2-22"
@@ -130,7 +130,7 @@
 										<!-- Size buttons -->
 										<c:forEach var="pd" items="${productDetail}">
 											<button id="${pd.id}" class="sizebutton"
-												onclick="selectSize(this, '${pd.size.id}', '${pd.price}', '${pd.quantity}')">
+												onclick="selectSize(this, '${pd.size.id}', '<fmt:formatNumber value="${pd.price}" type="number" groupingUsed="true" />', '${pd.quantity}')">
 												${pd.size.id}</button>
 										</c:forEach>
 									</div>

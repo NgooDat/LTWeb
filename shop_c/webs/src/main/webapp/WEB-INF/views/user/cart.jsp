@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
 <html style="font-size: 16px;">
 
@@ -149,7 +150,7 @@ section {
 														style="text-decoration: line-through !important;"></div>
 													<div class="u-price"
 														style="font-weight: 700; font-size: 1rem;"
-														data-price="${detail.price}">${detail.price}</div>
+														data-price="${detail.price}"><fmt:formatNumber value="${detail.price}" type="number" groupingUsed="true" />&nbsp;₫</div>
 												</div>
 											</div>
 										</td>
@@ -191,8 +192,8 @@ section {
 												<div class="u-price-wrapper">
 													<div class="u-old-price"
 														style="text-decoration: line-through !important;"></div>
-													<div class="u-price" style="font-weight: 400;" data-total>
-														${detail.total}</div>
+													<div class="u-price" style="font-weight: 400;" data-total="${detail.total}">
+														<fmt:formatNumber value="${detail.total}" type="number" groupingUsed="true" />&nbsp;₫</div>
 												</div>
 											</div>
 										</td>
@@ -243,9 +244,9 @@ section {
 											</path>
 										</g>
 									</g>
-								</svg></span>&nbsp;Quay lại </a> <a href="#"
+								</svg></span>&nbsp;Quay lại </a> <!-- <a href="#"
 							class="u-btn u-btn-round u-button-style u-cart-update u-grey-5 u-radius-50 u-block-90d4-60">Cập
-							nhật giỏ hàng</a>
+							nhật giỏ hàng</a> -->
 					</div>
 					<div class="u-cart-blocks-container">
 						<div class="u-cart-block u-indent-30"></div>

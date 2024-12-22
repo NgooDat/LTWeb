@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -165,7 +166,7 @@ tr td img {
 								style="width: 50px;"> ${selectProduct.name}</td>
 							<td>${selectProduct.size}</td>
 							<td>${selectProduct.quantity}</td>
-							<td>${selectProduct.price * selectProduct.quantity}</td>
+							<td><fmt:formatNumber value="${selectProduct.price * selectProduct.quantity}" type="number" groupingUsed="true" />&nbsp;₫</td>
 						</tr>
 						<c:set var="totalAmount"
 							value="${totalAmount + (selectProduct.price * selectProduct.quantity)}" />
@@ -174,7 +175,7 @@ tr td img {
 						<td></td>
 						<td></td>
 						<td>Tổng cộng:</td>
-						<td>${totalAmount}</td>
+						<td><fmt:formatNumber value="${totalAmount}" type="number" groupingUsed="true" />&nbsp;₫</td>
 					</tr>
 					<!-- Add more products as needed -->
 				</tbody>

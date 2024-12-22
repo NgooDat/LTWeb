@@ -10,9 +10,8 @@ function addToCart() {
 		return;
 	}
 
-	const priceElement = document.getElementById("price");
 	const quantity = document.getElementById("quantityInput");
-	fetch('cart/add.htm?pdid=' + selectedSize.id + '&price=' + priceElement.innerHTML + '&quantity=' + quantity.value, {
+	fetch('cart/add.htm?pdid=' + selectedSize.id + '&quantity=' + quantity.value, {
 		method: 'GET',
 		headers: {
 			'Accept': 'text/plain' // Server trả về định dạng text
@@ -60,7 +59,7 @@ function selectSize(button, sizeId, price, quantity) {
 
 	// Cập nhật số lượng tối đa dựa trên size được chọn
 	maxQuantity = parseInt(quantity);  // Thiết lập maxQuantity theo số lượng của sản phẩm
-	document.getElementById("quantityInput").value = oldQuantity;  // Reset lại số lượng về 1 khi chọn size mới
+	document.getElementById("quantityInput").value = oldQuantity;
 }
 
 // Hàm thay đổi số lượng (tăng hoặc giảm)

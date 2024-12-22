@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
 <html style="font-size: 16px;" lang="en">
 
@@ -83,11 +84,11 @@
                     data-add-zero-cents="true">
                     <div class="u-price-wrapper u-spacing-10"><!--product_old_price-->
                       <div class="u-old-price" style="text-decoration: line-through !important;">
-                        <!--product_old_price_content-->${product[2]*1.4} <!--/product_old_price_content-->
+                        <!--product_old_price_content--> <fmt:formatNumber value="${product[2]*1.4}" type="number" groupingUsed="true" /> <!--/product_old_price_content-->
                       </div>
                       <!--/product_old_price--><!--product_regular_price-->
                       <div class="u-price u-text-palette-2-base" style="font-size: 1.25rem; font-weight: 700;">
-                        <!--product_regular_price_content-->${product[2]} <!--/product_regular_price_content-->
+                        <!--product_regular_price_content--> <fmt:formatNumber value="${product[2]}" type="number" groupingUsed="true" /> ₫ <!--/product_regular_price_content-->
                       </div>
                       <!--/product_regular_price-->
                     </div>

@@ -119,8 +119,7 @@ public class CartController {
 
 	@ResponseBody // Để trả về dữ liệu trực tiếp
 	@RequestMapping(value = "/add", method = RequestMethod.GET)
-	public String insert(@RequestParam("price") int price, @RequestParam("pdid") int pdid,
-			@RequestParam("quantity") int quantity, HttpSession session) {
+	public String insert(@RequestParam("pdid") int pdid, @RequestParam("quantity") int quantity, HttpSession session) {
 
 		ProductDetail productDetail = productDetailDAO.getProductDetailById(pdid);
 		if (productDetail == null) {
@@ -153,7 +152,7 @@ public class CartController {
 				}
 			}
 
-			Cart cart = new Cart(quantity, 0, quantity * price, customer, productDetail);
+			Cart cart = new Cart(quantity, 0, quantity * productDetail.getPrice(), customer, productDetail);
 
 			cartDAO.createCart(cart);
 			carts = cartDAO.getCartsByCustomerId(customer.getId());
@@ -176,7 +175,7 @@ public class CartController {
 				}
 			}
 			Customer customer = new Customer(0);
-			Cart cart = new Cart(carts.size() + 1, quantity, 0, quantity * price, customer, productDetail);
+			Cart cart = new Cart(carts.size() + 1, quantity, 0, quantity * productDetail.getPrice(), customer, productDetail);
 			// Thêm sản phẩm vào giỏ
 			carts.add(cart);
 		}
