@@ -24,7 +24,9 @@ function addToCart() {
 				console.log('Không có sản phẩm này!!! - ' + data);
 				alert('Không có sản phẩm này!!!');
 			} else if (data === 'two') {
-
+				console.log('Số lượng không hợp lệ!!! - ' + data);
+				alert('Số lượng không hợp lệ!!!');
+			} else if (data === 'three') {
 				console.log('Sản phẩm đã có trong giỏ hàng!!! - ' + data);
 				alert('Sản phẩm đã có trong giỏ hàng!!!');
 			} else {

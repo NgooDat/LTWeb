@@ -125,6 +125,8 @@ public class CartController {
 		ProductDetail productDetail = productDetailDAO.getProductDetailById(pdid);
 		if (productDetail == null) {
 			return "one";
+		} else if (quantity < 1 || quantity > productDetail.getQuantity()) {
+			return "two";
 		}
 
 		String email = (String) session.getAttribute("user");
@@ -138,12 +140,16 @@ public class CartController {
 
 			for (Cart cart : carts) {
 				if (cart.getProductDetail().getId() == pdid && cart.getStatus() == 0) {
-					cart.setQuantity(cart.getQuantity() + quantity);
+					if ((cart.getQuantity() + quantity) >= productDetail.getQuantity()) {
+						cart.setQuantity(productDetail.getQuantity());
+					} else {
+						cart.setQuantity(cart.getQuantity() + quantity);
+					}
 					cartDAO.updateCart(cart);
 
 					carts = cartDAO.getCartsByCustomerId(customer.getId());
 					session.setAttribute("carts", carts);
-					return "two";
+					return "three";
 				}
 			}
 
@@ -158,10 +164,14 @@ public class CartController {
 			} else {
 				for (Cart cart : carts) {
 					if (cart.getProductDetail().getId() == pdid && cart.getStatus() == 0) {
-						cart.setQuantity(cart.getQuantity() + quantity);
+						if ((cart.getQuantity() + quantity) >= productDetail.getQuantity()) {
+							cart.setQuantity(productDetail.getQuantity());
+						} else {
+							cart.setQuantity(cart.getQuantity() + quantity);
+						}
 
 						session.setAttribute("carts", carts);
-						return "two";
+						return "three";
 					}
 				}
 			}
@@ -172,7 +182,7 @@ public class CartController {
 		}
 
 		session.setAttribute("carts", carts);
-		return "three";
+		return "four";
 	}
 
 	@ResponseBody // Để trả về dữ liệu trực tiếp
@@ -197,7 +207,7 @@ public class CartController {
 				session.setAttribute("carts", carts);
 			}
 		}
-		
+
 		session.setAttribute("selectIdCarts", selectIdCarts);
 		return "Xóa giỏ hàng thành công!!!";
 	}
