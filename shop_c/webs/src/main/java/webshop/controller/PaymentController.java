@@ -99,7 +99,7 @@ public class PaymentController {
 
 		// Lấy danh sách idCart từ session
 		@SuppressWarnings("unchecked")
-		List<Integer> selectIdCarts= (List<Integer>) session.getAttribute("selectIdCarts");
+		List<Integer> selectIdCarts = (List<Integer>) session.getAttribute("selectIdCarts");
 		if (selectIdCarts == null) {
 			return "redirect:cart.htm";
 		}
@@ -156,19 +156,18 @@ public class PaymentController {
 		String email = (String) session.getAttribute("user");
 		if (email == null) {
 			return "redirect:/login.htm";
-		}
-		if (idOrder == null) {
+		} else if (idOrder == null) {
 			return "redirect:/home.htm";
 		}
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 		Order order = orderDAO.getOrderById(idOrder);
 		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
 
-		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)) {
+		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)
+				|| order.getCustomer().getId() != customer.getId()) {
 			return "redirect:/home.htm";
 		}
-
-		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		List<Map<String, Object>> selectProducts = new ArrayList<>();
 		List<Product> dsProduct = productDAO.getAllProducts();
@@ -222,7 +221,7 @@ public class PaymentController {
 		Account account = accountDAO.getAccountByEmail(email);
 		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
-		List<Integer> selectIdCarts= (List<Integer>) session.getAttribute("selectIdCarts");
+		List<Integer> selectIdCarts = (List<Integer>) session.getAttribute("selectIdCarts");
 
 		if (selectIdCarts.isEmpty()) {
 			model.addAttribute("message", "Đặt hàng không thành công!!!");
@@ -309,19 +308,18 @@ public class PaymentController {
 		String email = (String) session.getAttribute("user");
 		if (email == null) {
 			return "redirect:/login.htm";
-		}
-		if (idOrder == null) {
+		} else if (idOrder == null) {
 			return "redirect:/home.htm";
 		}
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 		Order order = orderDAO.getOrderById(idOrder);
 		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
 
-		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)) {
+		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)
+				|| order.getCustomer().getId() != customer.getId()) {
 			return "redirect:/home.htm";
 		}
-
-		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		Date currentDate = new Date();
 
@@ -414,7 +412,7 @@ public class PaymentController {
 
 				Date currentDate = new Date();
 
-				List<Integer> selectIdCarts= (List<Integer>) session.getAttribute("selectIdCarts");
+				List<Integer> selectIdCarts = (List<Integer>) session.getAttribute("selectIdCarts");
 
 				if (selectIdCarts.isEmpty()) {
 					return "redirect:/home.htm";
@@ -513,19 +511,20 @@ public class PaymentController {
 			return "redirect:/login.htm";
 		} else if (idOrder == null) {
 			return "redirect:/home.htm";
-		}else if(paymentMethod != 2) {
-			return "redirect:/home.htm";
-		}
-		
-		Order order = orderDAO.getOrderById(idOrder);
-		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
-
-		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)) {
+		} else if (paymentMethod != 2) {
 			return "redirect:/home.htm";
 		}
 
 		Account account = accountDAO.getAccountByEmail(email);
 		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
+
+		Order order = orderDAO.getOrderById(idOrder);
+		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
+
+		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)
+				|| order.getCustomer().getId() != customer.getId()) {
+			return "redirect:/home.htm";
+		}
 
 		try {
 			// Gọi service tạo URL thanh toán
@@ -606,13 +605,15 @@ public class PaymentController {
 		String email = (String) session.getAttribute("user");
 		if (email == null) {
 			return "redirect:/login.htm";
-		}
-		if (idOrder == null) {
+		} else if (idOrder == null) {
 			return "redirect:/home.htm";
 		}
+
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 		Order order = orderDAO.getOrderById(idOrder);
-		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2
-				&& order.getPaymentStatus() == 1)) {
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2)
+				|| order.getPaymentStatus() == 1 || order.getCustomer().getId() != customer.getId()) {
 			return "redirect:/home.htm";
 		}
 		long totalAmount = (long) order.getTotal();
@@ -650,14 +651,16 @@ public class PaymentController {
 		String email = (String) session.getAttribute("user");
 		if (email == null) {
 			return "redirect:/login.htm";
-		}
-		if (idOrder == null || idPaymentMethod == null) {
+		} else if (idOrder == null || idPaymentMethod == null) {
 			return "redirect:/home.htm";
 		}
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 		Order order = orderDAO.getOrderById(idOrder);
 		PaymentMethod paymentMethod = paymentMethodDAO.getPaymentMethodById(idPaymentMethod);
-		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2
-				&& order.getPaymentStatus() == 1) || paymentMethod == null) {
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2)
+				|| order.getPaymentStatus() == 1 || order.getCustomer().getId() != customer.getId()
+				|| paymentMethod == null) {
 			return "redirect:/home.htm";
 		}
 
@@ -770,7 +773,7 @@ public class PaymentController {
 		}
 
 		// Gọi ZaloPayService để tạo đơn hàng
-		String response = zaloPayService.createOrder(appTransId, String.valueOf(totalAmount +16000), description);
+		String response = zaloPayService.createOrder(appTransId, String.valueOf(totalAmount + 16000), description);
 		try {
 
 			Account account = accountDAO.getAccountByEmail(email);
@@ -778,7 +781,7 @@ public class PaymentController {
 
 			Date currentDate1 = new Date();
 
-			List<Integer> selectIdCarts= (List<Integer>) session.getAttribute("selectIdCarts");
+			List<Integer> selectIdCarts = (List<Integer>) session.getAttribute("selectIdCarts");
 
 			if (selectIdCarts.isEmpty()) {
 				return "redirect:/home.htm";
@@ -881,18 +884,18 @@ public class PaymentController {
 			return "redirect:/login.htm";
 		} else if (idOrder == null) {
 			return "redirect:/home.htm";
-		}else if(paymentMethod != 3) {
+		} else if (paymentMethod != 3) {
 			return "redirect:/home.htm";
 		}
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 		Order order = orderDAO.getOrderById(idOrder);
 		List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByOrderId(idOrder);
 
-		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)) {
+		if (order == null || (order.getOrderStatus().getId() != 4 && order.getOrderStatus().getId() != 5)
+				|| order.getCustomer().getId() != customer.getId()) {
 			return "redirect:/home.htm";
 		}
-
-		Account account = accountDAO.getAccountByEmail(email);
-		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 
 		// Tạo thông tin thanh toán
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd");
@@ -989,9 +992,11 @@ public class PaymentController {
 		if (idOrder == null) {
 			return "redirect:/home.htm";
 		}
+		Account account = accountDAO.getAccountByEmail(email);
+		Customer customer = customerDAO.getCustomerByAccountID(account.getId());
 		Order order = orderDAO.getOrderById(idOrder);
-		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2
-				&& order.getPaymentStatus() == 1)) {
+		if (order == null || (order.getOrderStatus().getId() != 1 && order.getOrderStatus().getId() != 2)
+				|| order.getPaymentStatus() == 1 || order.getCustomer().getId() != customer.getId()) {
 			return "redirect:/home.htm";
 		}
 
